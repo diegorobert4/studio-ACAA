@@ -1,0 +1,139 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  margin-top: 0.5rem;
+}
+
+.addBtn {
+  background-color: var(--foreground);
+  color: var(--background);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 0;
+  transition: opacity 0.2s;
+}
+
+.addBtn:hover {
+  opacity: 0.8;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 3rem 1fr 200px 100px 150px 150px;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.projectRow {
+  display: grid;
+  grid-template-columns: 3rem 1fr 200px 100px 150px 150px;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--gray-100);
+  align-items: center;
+  background-color: var(--background);
+  transition: background-color 0.2s;
+}
+
+.projectRow:hover {
+  background-color: var(--gray-100);
+}
+
+.dragHandle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  cursor: grab;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.projectInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  background-color: var(--gray-200);
+}
+
+.projectTitle {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.imageCount {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.textCell {
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--foreground);
+  color: var(--background);
+  display: inline-block;
+  text-align: center;
+}
+
+.statusDraft {
+  background-color: var(--gray-200);
+  color: var(--gray-500);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.actionBtn {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.actionBtn:hover {
+  color: var(--foreground);
+}
+
+.deleteBtn:hover {
+  color: #dc2626;
+}

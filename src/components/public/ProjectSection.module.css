@@ -1,0 +1,189 @@
+.section {
+  height: 100vh;
+  width: 100vw;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+.carousel {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  min-width: 100vw;
+  height: 100%;
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .image {
+    object-fit: contain;
+    background-color: var(--gray-100);
+  }
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+}
+
+.navArrows {
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  right: 2rem;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.navArrow {
+  pointer-events: auto;
+  background: rgba(0,0,0,0.3);
+  color: white;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.navArrow:hover {
+  background: rgba(0,0,0,0.6);
+  transform: scale(1.05);
+}
+
+.navArrowHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.topRight {
+  align-self: flex-end;
+  margin-top: 4rem;
+}
+
+.infoBtn {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  backdrop-filter: blur(4px);
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: auto;
+  transition: background-color 0.2s;
+}
+.infoBtn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.bottomArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+}
+
+.projectHeader {
+  display: flex;
+  flex-direction: column;
+}
+
+.projectIndex {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.projectTitle {
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.arrowContainer {
+  display: flex;
+  align-items: flex-end;
+}
+
+.dotsContainer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  pointer-events: auto;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: background-color 0.3s;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.dotActive {
+  background-color: white;
+}
+
+.downArrow {
+  color: white;
+  pointer-events: auto;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  background: rgba(0,0,0,0.3);
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.downArrow:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.6);
+}

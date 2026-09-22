@@ -1,0 +1,31 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.1em;
+  color: white;
+  pointer-events: auto;
+}
+
+.navLinks {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: auto;
+  color: white;
+}
