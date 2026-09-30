@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { initialProjects, Project, Publication, PublicationType } from '@/data';
+import type { Project, Publication, PublicationType } from '@/data';
+import { saveProject } from '@/app/actions/projects';
 import { Upload, ChevronUp, ChevronDown, Plus, X } from 'lucide-react';
 
 interface ProjectEditorProps {
   id: string;
+  initialProject: Project | null;
+  nextOrder: number;
 }
 
 const publicationTypes: PublicationType[] = [
@@ -60,35 +62,29 @@ function Field({ label: text, children }: { label: string; children: React.React
   );
 }
 
-export default function ProjectEditor({ id }: ProjectEditorProps) {
-  const router = useRouter();
+export default function ProjectEditor({ id, initialProject, nextOrder }: ProjectEditorProps) {
   const isNew = id === 'new';
 
-  const [project, setProject] = useState<Project | null>(null);
-
-  useEffect(() => {
-    if (!isNew) {
-      const found = initialProjects.find(p => p.id === id);
-      if (found) {
-        setProject({ ...found });
-      }
-    } else {
-      setProject({
-        id: `p${Date.now()}`,
-        title: '',
-        status: 'Anteproyecto',
-        published: false,
-        order: initialProjects.length + 1,
-        location: '',
-        year: '',
-        area: '',
-        architects: 'Studio ACAA',
-        images: []
-      });
-    }
-  }, [id, isNew]);
-
-  if (!project) return <div>Cargando...</div>;
+  const [project, setProject] = useState<Project>(() => {
+    if (!isNew && initialProject) return { ...initialProject };
+    return {
+      id: crypto.randomUUID(),
+      title: '',
+      status: 'Anteproyecto',
+      published: false,
+      order: nextOrder,
+      location: '',
+      year: '',
+      area: '',
+      architects: 'Studio ACAA',
+      associatedArchitects: '',
+      collaborators: '',
+      instagramUrl: '',
+      partnerLinks: [],
+      publications: [],
+      images: [],
+    };
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -150,14 +146,16 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
     setProject({ ...project, images: project.images.filter(img => img.id !== imageId) });
   };
 
-  const saveProject = () => {
-    // In a real app, this would be an API call
-    console.log('Saved project:', {
-      ...project,
-      partnerLinks: partnerLinks.filter(l => l.trim() !== ''),
-      publications: publications.filter(p => p.name.trim() !== ''),
-    });
-    router.push('/admin');
+  const handleSave = async () => {
+    try {
+      await saveProject({
+        ...project,
+        partnerLinks: partnerLinks.filter(l => l.trim() !== ''),
+        publications: publications.filter(p => p.name.trim() !== ''),
+      });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'No se pudo guardar el proyecto.');
+    }
   };
 
   return (
@@ -173,18 +171,18 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
         </div>
 
         <div className="flex gap-3">
-            <Link
-              href="/admin"
-              className="border border-neutral-300 px-6 py-3 text-xs uppercase tracking-widest text-neutral-900 transition-colors hover:border-blueprint hover:text-blueprint"
-            >
-              Cancelar
-            </Link>
-            <button
-              onClick={saveProject}
-              className="bg-neutral-900 px-6 py-3 text-xs uppercase tracking-widest text-white transition-colors hover:bg-neutral-700"
-            >
-              Guardar cambios
-            </button>
+          <Link
+            href="/admin"
+            className="border border-neutral-300 px-6 py-3 text-xs uppercase tracking-widest text-neutral-900 transition-colors hover:border-blueprint hover:text-blueprint"
+          >
+            Cancelar
+          </Link>
+          <button
+            onClick={handleSave}
+            className="bg-neutral-900 px-6 py-3 text-xs uppercase tracking-widest text-white transition-colors hover:bg-neutral-700"
+          >
+            Guardar cambios
+          </button>
         </div>
       </div>
 
@@ -266,47 +264,47 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
                 <Plus size={14} /> Agregar publicación
               </button>
             </div>
-          {publications.length === 0 ? (
-            <p className="text-sm text-neutral-400">Sin publicaciones.</p>
-          ) : (
-            <div className="max-h-52 divide-y divide-neutral-200 overflow-y-auto overflow-x-hidden">
-              {publications.map((pub, index) => (
-                <div key={index} className="flex flex-col gap-1 py-2">
-                  <div className="flex items-center gap-2">
+            {publications.length === 0 ? (
+              <p className="text-sm text-neutral-400">Sin publicaciones.</p>
+            ) : (
+              <div className="max-h-52 divide-y divide-neutral-200 overflow-y-auto overflow-x-hidden">
+                {publications.map((pub, index) => (
+                  <div key={index} className="flex flex-col gap-1 py-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={pub.name}
+                        onChange={(e) => updatePublication(index, { name: e.target.value })}
+                        className={`${input} min-w-0 flex-1 py-1 text-sm`}
+                        placeholder="ArchDaily"
+                        aria-label="Nombre de la publicación"
+                      />
+                      <select
+                        value={pub.type}
+                        onChange={(e) => updatePublication(index, { type: e.target.value as PublicationType })}
+                        className={`${input} min-w-0 shrink-0 grow-0 basis-32 py-1 text-sm`}
+                        aria-label="Tipo de publicación"
+                      >
+                        {publicationTypes.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                      <button type="button" onClick={() => removePublication(index)} className={`${iconBtn} h-6 w-6`} aria-label="Eliminar publicación">
+                        <X size={14} />
+                      </button>
+                    </div>
                     <input
                       type="text"
-                      value={pub.name}
-                      onChange={(e) => updatePublication(index, { name: e.target.value })}
-                      className={`${input} min-w-0 flex-1 py-1 text-sm`}
-                      placeholder="ArchDaily"
-                      aria-label="Nombre de la publicación"
+                      value={pub.url ?? ''}
+                      onChange={(e) => updatePublication(index, { url: e.target.value })}
+                      className={`${input} py-1 text-xs`}
+                      placeholder="URL (opcional)"
+                      aria-label="URL de la publicación"
                     />
-                    <select
-                      value={pub.type}
-                      onChange={(e) => updatePublication(index, { type: e.target.value as PublicationType })}
-                      className={`${input} min-w-0 shrink-0 grow-0 basis-32 py-1 text-sm`}
-                      aria-label="Tipo de publicación"
-                    >
-                      {publicationTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={() => removePublication(index)} className={`${iconBtn} h-6 w-6`} aria-label="Eliminar publicación">
-                      <X size={14} />
-                    </button>
                   </div>
-                  <input
-                    type="text"
-                    value={pub.url ?? ''}
-                    onChange={(e) => updatePublication(index, { url: e.target.value })}
-                    className={`${input} py-1 text-xs`}
-                    placeholder="URL (opcional)"
-                    aria-label="URL de la publicación"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
           </div>
         </Section>
 
@@ -343,7 +341,6 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
             </button>
           </div>
         </Section>
-
       </div>
 
       <div className="mt-6">

@@ -17,7 +17,8 @@
   scrollbar-width: none;
 }
 .carousel::-webkit-scrollbar {
-  display: none;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .slide {
@@ -91,6 +92,7 @@
 .topRight {
   align-self: flex-end;
   margin-top: 4rem;
+  display: none;
 }
 
 .infoBtn {
@@ -113,7 +115,10 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  position: relative;
+  position: absolute;
+  left: 2rem;
+  right: 2rem;
+  bottom: 2rem;
 }
 
 .projectHeader {

@@ -3,18 +3,21 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { initialProjects, Project } from '@/data';
+import type { Project } from '@/data';
+import { deleteProject, reorderProjects } from '@/app/actions/projects';
 import styles from './ProjectList.module.css';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function ProjectList() {
+export default function ProjectList({ projects: initialProjects }: { projects: Project[] }) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
 
-  const deleteProject = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('¿Eliminar este proyecto?')) return;
     setProjects(projects.filter(p => p.id !== id));
+    await deleteProject(id);
   };
 
-  const moveProject = (index: number, direction: 'up' | 'down') => {
+  const moveProject = async (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return;
     if (direction === 'down' && index === projects.length - 1) return;
 
@@ -26,6 +29,7 @@ export default function ProjectList() {
     newProjects[targetIndex] = temp;
     
     setProjects(newProjects);
+    await reorderProjects(newProjects.map((project) => project.id));
   };
 
   return (
@@ -93,7 +97,7 @@ export default function ProjectList() {
               <Link href={`/admin/projects/${project.id}`} className={styles.actionBtn}>Editar</Link>
               <button 
                 className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                onClick={() => deleteProject(project.id)}
+                onClick={() => handleDelete(project.id)}
               >
                 Eliminar
               </button>
