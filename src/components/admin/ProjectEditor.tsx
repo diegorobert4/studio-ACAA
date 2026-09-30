@@ -1,43 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { initialProjects, Project } from '@/data';
+import type { Project } from '@/data';
+import { saveProject } from '@/app/actions/projects';
 import styles from './ProjectEditor.module.css';
 import { Upload } from 'lucide-react';
 
 interface ProjectEditorProps {
   id: string;
+  initialProject: Project | null;
+  nextOrder: number;
 }
 
-export default function ProjectEditor({ id }: ProjectEditorProps) {
-  const router = useRouter();
+export default function ProjectEditor({ id, initialProject, nextOrder }: ProjectEditorProps) {
   const isNew = id === 'new';
-  
-  const [project, setProject] = useState<Project | null>(null);
-
-  useEffect(() => {
-    if (!isNew) {
-      const found = initialProjects.find(p => p.id === id);
-      if (found) {
-        setProject({ ...found });
-      }
-    } else {
-      setProject({
-        id: `p${Date.now()}`,
+  const [project, setProject] = useState<Project | null>(() => {
+    if (!isNew && initialProject) return { ...initialProject };
+    return {
+        id: crypto.randomUUID(),
         title: '',
         status: 'Borrador',
-        order: initialProjects.length + 1,
+        order: nextOrder,
         location: '',
         year: '',
         area: '',
         architects: 'Studio ACAA',
         images: []
-      });
-    }
-  }, [id, isNew]);
+      };
+  });
 
   if (!project) return <div>Cargando...</div>;
 
@@ -69,10 +61,12 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
     setProject({ ...project, images: project.images.filter(img => img.id !== imageId) });
   };
 
-  const saveProject = () => {
-    // In a real app, this would be an API call
-    console.log('Saved project:', project);
-    router.push('/admin');
+  const handleSave = async () => {
+    try {
+      await saveProject(project);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'No se pudo guardar el proyecto.');
+    }
   };
 
   return (
@@ -85,7 +79,7 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
         <h2 className={styles.title}>{isNew ? 'Nuevo proyecto' : 'Editar proyecto'}</h2>
         <div className={styles.actions}>
           <Link href="/admin" className={`${styles.btn} ${styles.btnCancel}`}>Cancelar</Link>
-          <button onClick={saveProject} className={`${styles.btn} ${styles.btnSave}`}>Guardar Cambios</button>
+          <button onClick={handleSave} className={`${styles.btn} ${styles.btnSave}`}>Guardar Cambios</button>
         </div>
       </div>
 
@@ -184,8 +178,8 @@ export default function ProjectEditor({ id }: ProjectEditorProps) {
             <div key={img.id} className={styles.imageItem}>
               <div className={styles.imageDragHandle}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <button onClick={() => moveProject(index, 'up')} disabled={index === 0} style={{ padding: 0 }}>▲</button>
-                  <button onClick={() => moveProject(index, 'down')} disabled={index === project.images.length - 1} style={{ padding: 0 }}>▼</button>
+                  <button onClick={() => moveImage(index, 'up')} disabled={index === 0} style={{ padding: 0 }}>▲</button>
+                  <button onClick={() => moveImage(index, 'down')} disabled={index === project.images.length - 1} style={{ padding: 0 }}>▼</button>
                 </div>
               </div>
               <Image src={img.url} alt="" width={100} height={60} className={styles.imageThumbnail} />
