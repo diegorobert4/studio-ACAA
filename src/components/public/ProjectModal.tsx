@@ -61,7 +61,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 <div className={styles.infoItem}>
                   <h3>Publicaciones</h3>
                   {project.publications.map((pub, i) => (
-                    <p key={i}>{pub}</p>
+                    <p key={i}>{pub.name}</p>
                   ))}
                 </div>
               )}

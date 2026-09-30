@@ -6,9 +6,11 @@
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 300;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 2.25rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {
@@ -32,12 +34,19 @@
   opacity: 0.8;
 }
 
+.table {
+  background-color: var(--background);
+  border: 1px solid var(--gray-300);
+}
+
 .tableHeader {
   display: grid;
   grid-template-columns: 3rem 1fr 200px 100px 150px 150px;
   gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--gray-200);
+  padding: 1rem;
+  background-color: var(--gray-100);
+  border-bottom: 1px solid var(--gray-300);
+  font-family: var(--font-mono), monospace;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -45,19 +54,27 @@
   font-weight: 500;
 }
 
+.projectRow:last-child {
+  border-bottom: none;
+}
+
 .projectRow {
   display: grid;
   grid-template-columns: 3rem 1fr 200px 100px 150px 150px;
   gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--gray-100);
+  padding: 1rem;
+  border-bottom: 1px solid var(--gray-200);
   align-items: center;
   background-color: var(--background);
   transition: background-color 0.2s;
 }
 
 .projectRow:hover {
-  background-color: var(--gray-100);
+  background-color: var(--color-neutral-50);
+}
+
+.dragHandle button:hover:not(:disabled) {
+  color: var(--color-blueprint);
 }
 
 .dragHandle {
@@ -67,6 +84,16 @@
   justify-content: center;
   color: var(--gray-400);
   cursor: grab;
+  align-self: center;
+}
+
+.dragHandle button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.5rem;
+  line-height: 0;
 }
 
 .dragHandle:active {
@@ -106,20 +133,21 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.25rem 0.5rem;
-  background-color: var(--foreground);
-  color: var(--background);
+  font-family: var(--font-mono), monospace;
+  background-color: var(--color-estado-completado);
+  color: var(--color-estado-completado-fg);
   display: inline-block;
   text-align: center;
 }
 
 .statusDraft {
-  background-color: var(--gray-200);
+  background-color: var(--gray-100);
   color: var(--gray-500);
 }
 
 .actions {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .actionBtn {
@@ -131,9 +159,9 @@
 }
 
 .actionBtn:hover {
-  color: var(--foreground);
+  color: var(--color-blueprint);
 }
 
 .deleteBtn:hover {
-  color: #dc2626;
+  color: #b45454;
 }

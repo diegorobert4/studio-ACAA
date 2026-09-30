@@ -1,6 +1,3 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import styles from './layout.module.css';
 import Sidebar from '@/components/admin/Sidebar';
 
 export default function AdminLayout({
@@ -9,17 +6,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={styles.adminLayout}>
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className={styles.content}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>Administrador</h1>
-          <Link href="/" className={styles.backBtn}>
-            <ArrowLeft size={16} /> Ver sitio
-          </Link>
-        </header>
-        {children}
-      </main>
+      <main className="h-screen flex-1 overflow-y-auto bg-gray-50 p-12">{children}</main>
     </div>
   );
 }

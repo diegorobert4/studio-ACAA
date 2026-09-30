@@ -1,4 +1,17 @@
-export type ProjectStatus = 'Borrador' | 'Completado' | 'En obra' | 'Anteproyecto';
+export type ProjectStatus = 'Completado' | 'En obra' | 'Anteproyecto';
+
+export type PublicationType =
+  | 'Revista digital'
+  | 'Libro físico'
+  | 'Página web'
+  | 'Instagram'
+  | 'Otro';
+
+export interface Publication {
+  name: string;
+  type: PublicationType;
+  url?: string;
+}
 
 export interface ProjectImage {
   id: string;
@@ -10,6 +23,7 @@ export interface Project {
   id: string;
   title: string;
   status: ProjectStatus;
+  published: boolean;
   order: number;
   location: string;
   year: string;
@@ -19,7 +33,7 @@ export interface Project {
   collaborators?: string;
   instagramUrl?: string;
   partnerLinks?: string[];
-  publications?: string[];
+  publications?: Publication[];
   images: ProjectImage[];
 }
 
@@ -28,6 +42,7 @@ export const initialProjects: Project[] = [
     id: 'p1',
     title: 'Casa Serrano',
     status: 'Completado',
+    published: true,
     order: 1,
     location: 'Mendoza, Argentina',
     year: '2023',
@@ -36,7 +51,7 @@ export const initialProjects: Project[] = [
     associatedArchitects: 'Estudio XYZ',
     collaborators: 'Ing. Rodrigo Méndez',
     instagramUrl: 'https://instagram.com',
-    publications: ['Revista Summa+'],
+    publications: [{ name: 'Revista Summa+', type: 'Revista digital' }],
     images: [
       { id: 'img1', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80', order: 1 },
       { id: 'img2', url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80', order: 2 },
@@ -50,6 +65,7 @@ export const initialProjects: Project[] = [
     id: 'p2',
     title: 'Pabellón 12',
     status: 'En obra',
+    published: true,
     order: 2,
     location: 'Buenos Aires, Argentina',
     year: '2024',
@@ -66,6 +82,7 @@ export const initialProjects: Project[] = [
     id: 'p3',
     title: 'Torre Bahía',
     status: 'Anteproyecto',
+    published: true,
     order: 3,
     location: 'Montevideo, Uruguay',
     year: '2025',

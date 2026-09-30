@@ -40,6 +40,7 @@ export default function ProjectList() {
         </Link>
       </div>
 
+      <div className={styles.table}>
       <div className={styles.tableHeader}>
         <div>#</div>
         <div>Proyecto</div>
@@ -54,10 +55,10 @@ export default function ProjectList() {
           <div key={project.id} className={styles.projectRow}>
             <div className={styles.dragHandle}>
               <button onClick={() => moveProject(index, 'up')} disabled={index === 0}>
-                <ChevronUp size={16} />
+                <ChevronUp size={20} />
               </button>
               <button onClick={() => moveProject(index, 'down')} disabled={index === projects.length - 1}>
-                <ChevronDown size={16} />
+                <ChevronDown size={20} />
               </button>
             </div>
             
@@ -83,8 +84,8 @@ export default function ProjectList() {
             <div className={styles.textCell}>{project.year}</div>
             
             <div>
-              <span className={`${styles.status} ${project.status === 'Borrador' ? styles.statusDraft : ''}`}>
-                {project.status === 'Completado' || project.status === 'En obra' || project.status === 'Anteproyecto' ? 'Publicado' : 'Borrador'}
+              <span className={`${styles.status} ${project.published ? '' : styles.statusDraft}`}>
+                {project.published ? 'Publicado' : 'Borrador'}
               </span>
             </div>
 
@@ -99,6 +100,7 @@ export default function ProjectList() {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

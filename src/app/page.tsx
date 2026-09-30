@@ -10,6 +10,7 @@ import ContactSection from '@/components/public/ContactSection';
 import ProjectModal from '@/components/public/ProjectModal';
 
 export default function Home() {
+  const publishedProjects = initialProjects.filter((p) => p.published);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +36,7 @@ export default function Home() {
     <main className={styles.container} ref={containerRef}>
       <Navbar />
 
-      {initialProjects.map((project, index) => (
+      {publishedProjects.map((project, index) => (
         <ProjectSection 
           key={project.id}
           project={project}
