@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Project, Publication, PublicationType } from '@/data';
 import { saveProject } from '@/app/actions/projects';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 import { Upload, ChevronUp, ChevronDown, Plus, X } from 'lucide-react';
 
 interface ProjectEditorProps {
@@ -85,6 +86,8 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
       images: [],
     };
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -115,17 +118,31 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
     setProject({ ...project, publications: publications.filter((_, i) => i !== index) });
   };
 
-  const addImages = (files: FileList | null) => {
+  const addImages = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const stamp = Date.now();
-    const added = Array.from(files)
-      .filter(file => file.type.startsWith('image/'))
-      .map((file, i) => ({
-        id: `img${stamp}-${i}`,
-        url: URL.createObjectURL(file),
-        order: project.images.length + i + 1,
+    const selectedFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+    if (!selectedFiles.length) return;
+    setUploadError('');
+    setIsUploading(true);
+    try {
+      const supabase = createSupabaseClient();
+      const added = await Promise.all(selectedFiles.map(async (file, index) => {
+        const id = crypto.randomUUID();
+        const extension = file.name.split('.').pop()?.replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
+        const path = `projects/${project.id}/${id}.${extension}`;
+        const { error } = await supabase.storage.from('project-images').upload(path, file, {
+          cacheControl: '31536000', contentType: file.type, upsert: false,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+        return { id, url: data.publicUrl, order: project.images.length + index + 1 };
       }));
-    setProject({ ...project, images: [...project.images, ...added] });
+      setProject((current) => ({ ...current, images: [...current.images, ...added] }));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'No se pudieron subir las imágenes.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const moveImage = (index: number, direction: 'up' | 'down') => {
@@ -359,6 +376,7 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               type="file"
               accept="image/*"
               multiple
+              disabled={isUploading}
               className="sr-only"
               onChange={(e) => {
                 addImages(e.target.files);
@@ -366,6 +384,8 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               }}
             />
           </label>
+          {isUploading && <p className="text-sm text-neutral-500">Subiendo imágenes…</p>}
+          {uploadError && <p className="text-sm text-[#a64b4b]" role="alert">{uploadError}</p>}
 
           {project.images.length > 0 && (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">

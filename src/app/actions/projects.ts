@@ -38,7 +38,7 @@ export async function saveProject(project: Project) {
     if (linksError) throw new Error(linksError.message);
   }
   if (project.publications?.length) {
-    const { error: publicationsError } = await supabase.from('publicaciones').insert(project.publications.map((nombre, index) => ({ proyecto_id: data.id, nombre, orden: index + 1 })));
+    const { error: publicationsError } = await supabase.from('publicaciones').insert(project.publications.map((publication, index) => ({ proyecto_id: data.id, nombre: publication.name, tipo: publication.type, url: publication.url || null, orden: index + 1 })));
     if (publicationsError) throw new Error(publicationsError.message);
   }
   revalidatePath('/'); revalidatePath('/admin'); redirect('/admin');
