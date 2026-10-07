@@ -19,3 +19,14 @@
   color: white;
   pointer-events: auto;
 }
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+
+  .logo {
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+  }
+}

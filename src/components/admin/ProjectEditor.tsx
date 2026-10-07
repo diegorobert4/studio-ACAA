@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Project, Publication, PublicationType } from '@/data';
+import { toast } from 'sonner';
+import { publicationTypeLabels, type Project, type Publication, type PublicationType } from '@/data';
 import { saveProject } from '@/app/actions/projects';
 import { createClient as createSupabaseClient } from '@/lib/supabase/client';
+import { compressToWebp } from '@/lib/image-compress';
+import { IMAGES_BUCKET, IMAGE_MAX_BYTES, IMAGE_TYPES, imagePathFromUrl, storageErrorMessage } from '@/lib/storage';
 import { Upload, ChevronUp, ChevronDown, Plus, X } from 'lucide-react';
 
 interface ProjectEditorProps {
@@ -14,19 +17,18 @@ interface ProjectEditorProps {
   nextOrder: number;
 }
 
-const publicationTypes: PublicationType[] = [
-  'Revista digital',
-  'Libro físico',
-  'Página web',
-  'Instagram',
-  'Otro',
-];
+const publicationTypes = Object.keys(publicationTypeLabels) as PublicationType[];
+
+const sizeError = (name: string, bytes: number) =>
+  `"${name}": pesa ${(bytes / 1024 / 1024).toFixed(1)} MB y el máximo es ${IMAGE_MAX_BYTES / 1024 / 1024} MB.`;
 
 const label = 'font-mono text-xs uppercase tracking-widest text-neutral-500';
 const input =
   'w-full rounded-none border-0 border-b border-neutral-300 bg-transparent py-2 text-base text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-blueprint';
 const ghostBtn =
   'inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-neutral-500 transition-colors hover:text-blueprint';
+const imgBtn =
+  'flex h-10 w-10 shrink-0 items-center justify-center text-neutral-400 transition-colors hover:text-blueprint disabled:opacity-30 disabled:hover:text-neutral-400 sm:h-8 sm:w-8';
 const iconBtn =
   'flex h-8 w-8 shrink-0 items-center justify-center text-neutral-400 transition-colors hover:text-blueprint disabled:opacity-30 disabled:hover:text-neutral-400';
 
@@ -42,7 +44,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`border border-neutral-200 bg-white p-6 ${className}`}>
+    <section className={`min-w-0 border border-neutral-200 bg-white p-4 sm:p-6 ${className}`}>
       <h3 className="mb-6 flex items-baseline gap-3 border-b border-neutral-200 pb-3">
         <span className="font-mono text-xs tracking-widest text-blueprint">{number}</span>
         <span className="font-heading text-lg font-bold tracking-tight text-neutral-900">
@@ -87,7 +89,9 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
     };
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [stage, setStage] = useState<'processing' | 'uploading'>('processing');
   const [uploadError, setUploadError] = useState('');
+  const uploadedIds = useRef(new Set<string>());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -112,7 +116,7 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
     });
   };
   const addPublication = () => {
-    setProject({ ...project, publications: [...publications, { name: '', type: 'Revista digital', url: '' }] });
+    setProject({ ...project, publications: [...publications, { name: '', type: 'revista_digital', url: '' }] });
   };
   const removePublication = (index: number) => {
     setProject({ ...project, publications: publications.filter((_, i) => i !== index) });
@@ -120,29 +124,56 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
 
   const addImages = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const selectedFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
-    if (!selectedFiles.length) return;
-    setUploadError('');
+    const errors: string[] = [];
+    const valid = Array.from(files).filter((file) => {
+      if (!(file.type in IMAGE_TYPES)) {
+        errors.push(`"${file.name}": formato no permitido (solo JPG, PNG o WebP).`);
+        return false;
+      }
+      if (file.size > IMAGE_MAX_BYTES) {
+        errors.push(sizeError(file.name, file.size));
+        return false;
+      }
+      return true;
+    });
+    setUploadError(errors.join('\n'));
+    if (!valid.length) return;
     setIsUploading(true);
-    try {
-      const supabase = createSupabaseClient();
-      const added = await Promise.all(selectedFiles.map(async (file, index) => {
-        const id = crypto.randomUUID();
-        const extension = file.name.split('.').pop()?.replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
-        const path = `projects/${project.id}/${id}.${extension}`;
-        const { error } = await supabase.storage.from('project-images').upload(path, file, {
-          cacheControl: '31536000', contentType: file.type, upsert: false,
-        });
-        if (error) throw error;
-        const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-        return { id, url: data.publicUrl, order: project.images.length + index + 1 };
-      }));
-      setProject((current) => ({ ...current, images: [...current.images, ...added] }));
-    } catch (error) {
-      setUploadError(error instanceof Error ? error.message : 'No se pudieron subir las imágenes.');
-    } finally {
-      setIsUploading(false);
+    setStage('processing');
+    // Se comprime de a una para no tener varias fotos grandes decodificadas en memoria a la vez.
+    const processed: { name: string; blob: Blob }[] = [];
+    for (const file of valid) {
+      try {
+        const blob = await compressToWebp(file);
+        if (blob.size > IMAGE_MAX_BYTES) errors.push(sizeError(file.name, blob.size));
+        else processed.push({ name: file.name, blob });
+      } catch (error) {
+        errors.push(`"${file.name}": ${error instanceof Error ? error.message : 'no se pudo procesar la imagen.'}`);
+      }
     }
+    setStage('uploading');
+    const supabase = createSupabaseClient();
+    const results = await Promise.allSettled(processed.map(async ({ name, blob }) => {
+      const id = crypto.randomUUID();
+      const path = `projects/${project.id}/${id}.webp`;
+      const { error } = await supabase.storage.from(IMAGES_BUCKET).upload(path, blob, {
+        cacheControl: '31536000', contentType: 'image/webp', upsert: false,
+      });
+      if (error) throw new Error(`"${name}": ${storageErrorMessage(error)}`);
+      const { data } = supabase.storage.from(IMAGES_BUCKET).getPublicUrl(path);
+      return { id, url: data.publicUrl, order: 0 };
+    }));
+    const added = results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+    results.forEach((result) => {
+      if (result.status === 'rejected') errors.push(result.reason instanceof Error ? result.reason.message : 'No se pudo subir una imagen.');
+    });
+    added.forEach((image) => uploadedIds.current.add(image.id));
+    setProject((current) => ({
+      ...current,
+      images: [...current.images, ...added].map((image, index) => ({ ...image, order: index + 1 })),
+    }));
+    setUploadError(errors.join('\n'));
+    setIsUploading(false);
   };
 
   const moveImage = (index: number, direction: 'up' | 'down') => {
@@ -160,18 +191,38 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
   };
 
   const removeImage = (imageId: string) => {
+    const image = project.images.find((img) => img.id === imageId);
     setProject({ ...project, images: project.images.filter(img => img.id !== imageId) });
+    // Subida en esta sesión y todavía sin guardar: nadie la referencia, se borra ya.
+    // Las imágenes ya guardadas se borran del bucket en saveProject(), así cancelar no deja filas rotas.
+    const path = image && uploadedIds.current.has(imageId) ? imagePathFromUrl(image.url) : null;
+    if (path) {
+      uploadedIds.current.delete(imageId);
+      createSupabaseClient().storage.from(IMAGES_BUCKET).remove([path]).then(({ error }) => {
+        if (error) setUploadError(`No se pudo borrar el archivo del almacenamiento: ${storageErrorMessage(error)}`);
+      });
+    }
   };
 
   const handleSave = async () => {
     try {
-      await saveProject({
+      const result = await saveProject({
         ...project,
         partnerLinks: partnerLinks.filter(l => l.trim() !== ''),
         publications: publications.filter(p => p.name.trim() !== ''),
       });
+      // Los fallos controlados llegan como { error }; el éxito redirige y nunca vuelve acá.
+      if (result?.error) toast.error(result.error);
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'No se pudo guardar el proyecto.');
+      // redirect() de la Server Action se propaga como excepción NEXT_REDIRECT: es éxito, no un error.
+      const digest = (error as { digest?: unknown } | null)?.digest;
+      if (typeof digest === 'string' && digest.startsWith('NEXT_REDIRECT')) {
+        // El Toaster vive en el layout de /admin, así que el toast sigue visible tras la redirección.
+        toast.success('Proyecto guardado.');
+        throw error;
+      }
+      // Cualquier otra excepción llega sin detalle desde el servidor (Next lo oculta en producción).
+      toast.error('No se pudo guardar el proyecto. Revisá tu conexión e intentá de nuevo.');
     }
   };
 
@@ -182,15 +233,15 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
           <div className="mb-4 font-mono text-xs uppercase tracking-widest text-neutral-400">
             <Link href="/admin" className="hover:text-blueprint">Proyectos</Link> / {isNew ? 'Nuevo proyecto' : project.title}
           </div>
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-neutral-900">
+          <h1 className="break-words font-heading text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
             {isNew ? 'Nuevo proyecto' : project.title}
           </h1>
         </div>
 
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:flex">
           <Link
             href="/admin"
-            className="border border-neutral-300 px-6 py-3 text-xs uppercase tracking-widest text-neutral-900 transition-colors hover:border-blueprint hover:text-blueprint"
+            className="border border-neutral-300 px-6 py-3 text-center text-xs uppercase tracking-widest text-neutral-900 transition-colors hover:border-blueprint hover:text-blueprint"
           >
             Cancelar
           </Link>
@@ -287,23 +338,23 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               <div className="max-h-52 divide-y divide-neutral-200 overflow-y-auto overflow-x-hidden">
                 {publications.map((pub, index) => (
                   <div key={index} className="flex flex-col gap-1 py-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <input
                         type="text"
                         value={pub.name}
                         onChange={(e) => updatePublication(index, { name: e.target.value })}
-                        className={`${input} min-w-0 flex-1 py-1 text-sm`}
+                        className={`${input} min-w-0 basis-full py-1 text-sm sm:flex-1 sm:basis-0`}
                         placeholder="ArchDaily"
                         aria-label="Nombre de la publicación"
                       />
                       <select
                         value={pub.type}
                         onChange={(e) => updatePublication(index, { type: e.target.value as PublicationType })}
-                        className={`${input} min-w-0 shrink-0 grow-0 basis-32 py-1 text-sm`}
+                        className={`${input} min-w-0 shrink-0 grow basis-32 py-1 text-sm sm:grow-0`}
                         aria-label="Tipo de publicación"
                       >
                         {publicationTypes.map(type => (
-                          <option key={type} value={type}>{type}</option>
+                          <option key={type} value={type}>{publicationTypeLabels[type]}</option>
                         ))}
                       </select>
                       <button type="button" onClick={() => removePublication(index)} className={`${iconBtn} h-6 w-6`} aria-label="Eliminar publicación">
@@ -368,13 +419,16 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               e.preventDefault();
               addImages(e.dataTransfer.files);
             }}
-            className="flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed border-neutral-300 bg-neutral-50 p-10 text-neutral-500 transition-colors hover:border-blueprint hover:text-blueprint"
+            className="flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed border-neutral-300 bg-neutral-50 p-6 text-center text-neutral-500 sm:p-10 transition-colors hover:border-blueprint hover:text-blueprint"
           >
             <Upload size={24} />
-            <span className="text-sm">Arrastrá imágenes acá o hacé clic para subir</span>
+            <span className="text-sm">
+              <span className="hidden sm:inline">Arrastrá imágenes acá o hacé clic para subir</span>
+              <span className="sm:hidden">Tocá para subir imágenes</span>
+            </span>
             <input
               type="file"
-              accept="image/*"
+              accept={Object.keys(IMAGE_TYPES).join(',')}
               multiple
               disabled={isUploading}
               className="sr-only"
@@ -384,11 +438,15 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               }}
             />
           </label>
-          {isUploading && <p className="text-sm text-neutral-500">Subiendo imágenes…</p>}
-          {uploadError && <p className="text-sm text-[#a64b4b]" role="alert">{uploadError}</p>}
+          {isUploading && (
+            <p className="text-sm text-neutral-500">
+              {stage === 'processing' ? 'Comprimiendo imágenes…' : 'Subiendo imágenes…'}
+            </p>
+          )}
+          {uploadError && <p className="whitespace-pre-line text-sm text-[#a64b4b]" role="alert">{uploadError}</p>}
 
           {project.images.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
               {project.images.map((img, index) => (
                 <div key={img.id} className="border border-neutral-200 bg-white">
                   <Image
@@ -396,7 +454,6 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
                     alt=""
                     width={320}
                     height={200}
-                    unoptimized={img.url.startsWith('blob:')}
                     className="aspect-[8/5] w-full object-cover"
                   />
                   <div className="flex items-center justify-between border-t border-neutral-200 px-2 py-1">
@@ -404,13 +461,13 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <div className="flex items-center">
-                      <button type="button" className={iconBtn} onClick={() => moveImage(index, 'up')} disabled={index === 0} aria-label="Subir imagen">
+                      <button type="button" className={imgBtn} onClick={() => moveImage(index, 'up')} disabled={index === 0} aria-label="Subir imagen">
                         <ChevronUp size={18} />
                       </button>
-                      <button type="button" className={iconBtn} onClick={() => moveImage(index, 'down')} disabled={index === project.images.length - 1} aria-label="Bajar imagen">
+                      <button type="button" className={imgBtn} onClick={() => moveImage(index, 'down')} disabled={index === project.images.length - 1} aria-label="Bajar imagen">
                         <ChevronDown size={18} />
                       </button>
-                      <button type="button" className={`${iconBtn} hover:text-[#b45454]`} onClick={() => removeImage(img.id)} aria-label="Eliminar imagen">
+                      <button type="button" className={`${imgBtn} hover:text-[#b45454]`} onClick={() => removeImage(img.id)} aria-label="Eliminar imagen">
                         <X size={16} />
                       </button>
                     </div>
