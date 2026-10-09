@@ -12,10 +12,10 @@ export default function Portfolio({ projects }: { projects: Project[] }) {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [visibleProjectIndex, setVisibleProjectIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const handleScrollToNext = (e: React.MouseEvent, index: number) => {
+  const handleScrollToNext = (e: React.MouseEvent) => {
     e.preventDefault();
-    const nextChild = containerRef.current && Array.from(containerRef.current.children)[index + 2];
-    nextChild?.scrollIntoView({ behavior: 'smooth' });
+    // Baja a la sección hermana siguiente: el próximo proyecto, o Contacto tras el último.
+    e.currentTarget.closest('section')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   const handleScroll = () => {
     if (!containerRef.current) return;

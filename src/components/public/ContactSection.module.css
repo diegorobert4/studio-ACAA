@@ -100,3 +100,47 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
+
+/* Mobile: una sola columna, caja más compacta y footer apilado. */
+@media (max-width: 768px) {
+  .contactSection {
+    height: auto;
+    min-height: 100dvh;
+    width: 100%;
+    padding: 4.5rem 1rem 1.5rem;
+  }
+
+  .contactBox {
+    padding: 1.5rem;
+  }
+
+  .contactTitle {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contactForm {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .formGroup {
+    min-width: 0;
+  }
+
+  .submitBtn {
+    justify-self: stretch;
+    padding: 0.875rem 1.5rem;
+  }
+
+  .contactFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    overflow-wrap: anywhere;
+  }
+}

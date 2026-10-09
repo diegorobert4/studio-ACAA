@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styles from './ContactSection.module.css';
 
 // TODO: reemplazar por el número definitivo de Alberto (formato: código de país + número, sin "+" ni espacios, ej: "5493511234567")
-const WHATSAPP_NUMBER = '56956389276';
+const WHATSAPP_NUMBER = '56988158934';
 
 export default function ContactSection() {
   const [name, setName] = useState('');
