@@ -19,3 +19,14 @@
   color: white;
   pointer-events: auto;
 }
+
+.projectMenu { position: fixed; top: 2rem; right: 16rem; z-index: 101; }
+.projectToggle { display: flex; align-items: center; gap: 0.5rem; background-color: rgba(0, 0, 0, 0.5); color: white; backdrop-filter: blur(4px); padding: 0.75rem 1.25rem; border-radius: 9999px; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; transition: background-color 0.2s; }
+.projectToggle:hover { background-color: rgba(0, 0, 0, 0.8); }
+.projectToggle svg { transition: transform 0.2s; }
+.chevronOpen { transform: rotate(180deg); }
+.projectList { position: absolute; top: calc(100% + 0.75rem); right: 0; width: min(280px, calc(100vw - 4rem)); max-height: min(60vh, 420px); overflow-y: auto; padding: 0.5rem; background: rgba(17, 17, 17, 0.9); color: white; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
+.projectItem { width: 100%; display: flex; gap: 0.75rem; padding: 0.75rem; text-align: left; color: rgba(255, 255, 255, 0.72); font-size: 0.875rem; transition: background-color 0.2s, color 0.2s; }
+.projectItem span { font-size: 0.7rem; letter-spacing: 0.1em; }
+.projectItem:hover, .projectItemActive { background: rgba(255, 255, 255, 0.12); color: white; }
+@media (max-width: 640px) { .projectMenu { top: 5.5rem; right: 2rem; } }

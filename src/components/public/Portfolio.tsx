@@ -22,8 +22,15 @@ export default function Portfolio({ projects }: { projects: Project[] }) {
     const index = Math.round(containerRef.current.scrollTop / containerRef.current.clientHeight);
     setVisibleProjectIndex(Math.min(index, Math.max(projects.length - 1, 0)));
   };
+  const selectProject = (index: number) => {
+    setVisibleProjectIndex(index);
+    containerRef.current?.scrollTo({
+      top: index * containerRef.current.clientHeight,
+      behavior: 'smooth',
+    });
+  };
   return <main className={styles.container} ref={containerRef} onScroll={handleScroll}>
-    <Navbar />
+    <Navbar projects={projects} activeIndex={visibleProjectIndex} onSelectProject={selectProject} />
     <button className={styles.infoButton} onClick={() => setActiveProject(projects[visibleProjectIndex] ?? null)} disabled={!projects.length}>Ver información</button>
     {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} onOpenInfo={setActiveProject} onScrollToNext={handleScrollToNext} />)}
     <ContactSection />
