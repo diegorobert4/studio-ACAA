@@ -1,11 +1,20 @@
 export type ProjectStatus = 'Completado' | 'En obra' | 'Anteproyecto';
 
+// Los valores coinciden con el check publicaciones_tipo_check de Supabase.
 export type PublicationType =
-  | 'Revista digital'
-  | 'Libro físico'
-  | 'Página web'
-  | 'Instagram'
-  | 'Otro';
+  | 'revista_digital'
+  | 'libro_fisico'
+  | 'pagina_web'
+  | 'instagram'
+  | 'otro';
+
+export const publicationTypeLabels: Record<PublicationType, string> = {
+  revista_digital: 'Revista digital',
+  libro_fisico: 'Libro físico',
+  pagina_web: 'Página web',
+  instagram: 'Instagram',
+  otro: 'Otro',
+};
 
 export interface Publication {
   name: string;
@@ -35,6 +44,7 @@ export interface Project {
   partnerLinks?: string[];
   publications?: Publication[];
   images: ProjectImage[];
+  updatedAt?: string;
 }
 
 export const initialProjects: Project[] = [
@@ -51,7 +61,7 @@ export const initialProjects: Project[] = [
     associatedArchitects: 'Estudio XYZ',
     collaborators: 'Ing. Rodrigo Méndez',
     instagramUrl: 'https://instagram.com',
-    publications: [{ name: 'Revista Summa+', type: 'Revista digital' }],
+    publications: [{ name: 'Revista Summa+', type: 'revista_digital' }],
     images: [
       { id: 'img1', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80', order: 1 },
       { id: 'img2', url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80', order: 2 },

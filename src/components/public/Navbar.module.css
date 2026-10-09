@@ -30,3 +30,13 @@
 .projectItem span { font-size: 0.7rem; letter-spacing: 0.1em; }
 .projectItem:hover, .projectItemActive { background: rgba(255, 255, 255, 0.12); color: white; }
 @media (max-width: 640px) { .projectMenu { top: 5.5rem; right: 2rem; } }
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+
+  .logo {
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+  }
+}

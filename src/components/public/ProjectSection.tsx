@@ -16,6 +16,10 @@ interface ProjectSectionProps {
 export default function ProjectSection({ project, index, onOpenInfo, onScrollToNext }: ProjectSectionProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
+  // Proporción (ancho/alto) real de cada imagen, medida al cargar: en mobile el carrusel toma la proporción de la imagen activa.
+  const [ratios, setRatios] = useState<Record<string, number>>({});
+  const activeImage = project.images[activeImageIndex];
+  const activeRatio = activeImage ? ratios[activeImage.id] : undefined;
 
   const handleHorizontalScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -49,7 +53,10 @@ export default function ProjectSection({ project, index, onOpenInfo, onScrollToN
   };
 
   return (
-    <section className={styles.section}>
+    <section
+      className={styles.section}
+      style={activeRatio ? ({ '--active-ratio': activeRatio } as React.CSSProperties) : undefined}
+    >
       <div 
         ref={carouselRef}
         className={styles.carousel} 
@@ -61,8 +68,14 @@ export default function ProjectSection({ project, index, onOpenInfo, onScrollToN
               src={img.url} 
               alt={`${project.title} - ${img.id}`}
               fill
+              sizes="100vw"
+              quality={90}
               className={styles.image}
               priority={index === 0 && i === 0}
+              onLoad={(e) => {
+                const { naturalWidth, naturalHeight } = e.currentTarget;
+                if (naturalWidth && naturalHeight) setRatios((current) => ({ ...current, [img.id]: naturalWidth / naturalHeight }));
+              }}
             />
           </div>
         ))}
