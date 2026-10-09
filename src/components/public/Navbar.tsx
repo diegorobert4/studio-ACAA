@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { Project } from '@/data';
+import { useLanguage, type Language } from '@/lib/i18n';
 import styles from './Navbar.module.css';
+
+const languages: Language[] = ['es', 'it'];
 
 export default function Navbar({ projects, activeIndex, onSelectProject }: {
   projects: Project[];
@@ -9,11 +12,15 @@ export default function Navbar({ projects, activeIndex, onSelectProject }: {
   onSelectProject: (index: number) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
   return <div className={styles.navigation}>
     <nav className={styles.navbar}>
       <div className={styles.logo}>STUDIO ACAA</div>
     </nav>
     <div className={styles.projectMenu}>
+      <div className={styles.languageToggle} role="group" aria-label="Idioma / Lingua">
+        {languages.map((code) => <button key={code} type="button" className={`${styles.languageOption} ${code === language ? styles.languageOptionActive : ''}`} onClick={() => setLanguage(code)} aria-pressed={code === language}>{code.toUpperCase()}</button>)}
+      </div>
       <button type="button" className={styles.projectToggle} onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen}>
         Proyectos <ChevronDown size={16} className={isOpen ? styles.chevronOpen : undefined} />
       </button>

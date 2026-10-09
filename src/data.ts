@@ -28,8 +28,14 @@ export interface ProjectImage {
   order: number;
 }
 
+// Campos de Project que tienen versión en italiano (tabla proyecto_traduccion_it).
+export const translatableFields = ['title', 'architects', 'associatedArchitects', 'collaborators', 'location'] as const;
+export type TranslatableField = (typeof translatableFields)[number];
+export type ProjectTranslation = Partial<Record<TranslatableField, string>>;
+
 export interface Project {
   id: string;
+  translationIt?: ProjectTranslation;
   title: string;
   status: ProjectStatus;
   published: boolean;

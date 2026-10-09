@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Project } from '@/data';
 import styles from './ProjectSection.module.css';
 import { ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { localizeProject, useLanguage } from '@/lib/i18n';
 
 interface ProjectSectionProps {
   project: Project;
@@ -14,6 +15,7 @@ interface ProjectSectionProps {
 }
 
 export default function ProjectSection({ project, index, onOpenInfo, onScrollToNext }: ProjectSectionProps) {
+  const { language, statusLabel } = useLanguage();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   // Proporción (ancho/alto) real de cada imagen, medida al cargar: en mobile el carrusel toma la proporción de la imagen activa.
@@ -110,9 +112,9 @@ export default function ProjectSection({ project, index, onOpenInfo, onScrollToN
         <div className={styles.bottomArea}>
           <div className={styles.projectHeader}>
             <div className={styles.projectIndex}>
-              0{index + 1} — {project.status}
+              0{index + 1} — {statusLabel(project.status)}
             </div>
-            <h2 className={styles.projectTitle}>{project.title}</h2>
+            <h2 className={styles.projectTitle}>{localizeProject(project, language).title}</h2>
           </div>
           
           <div className={styles.dotsContainer}>

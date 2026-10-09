@@ -27,7 +27,12 @@
   pointer-events: auto;
 }
 
-.projectMenu { position: fixed; top: var(--nav-pad); right: 16rem; height: var(--nav-h); display: flex; align-items: center; z-index: 101; }
+.projectMenu { position: fixed; top: var(--nav-pad); right: 16rem; height: var(--nav-h); display: flex; align-items: center; gap: 0.5rem; z-index: 101; }
+.languageToggle { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); border-radius: 9999px; padding: 0.25rem; }
+.languageOption { color: rgba(255, 255, 255, 0.6); padding: 0.5rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; letter-spacing: 0.05em; transition: color 0.2s, background-color 0.2s; }
+.languageOption:hover { color: white; }
+.languageOptionActive { color: #111; background-color: white; }
+.languageOptionActive:hover { color: #111; }
 .projectToggle { display: flex; align-items: center; gap: 0.5rem; background-color: rgba(0, 0, 0, 0.5); color: white; backdrop-filter: blur(4px); padding: 0.75rem 1.25rem; border-radius: 9999px; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; transition: background-color 0.2s; }
 .projectToggle:hover { background-color: rgba(0, 0, 0, 0.8); }
 .projectToggle svg { transition: transform 0.2s; }
@@ -53,6 +58,15 @@
   .logo {
     font-size: 0.875rem;
     letter-spacing: 0.08em;
+  }
+
+  .projectMenu {
+    gap: 0.375rem;
+  }
+
+  .languageOption {
+    padding: 0.3125rem 0.5rem;
+    font-size: 0.6875rem;
   }
 
   .projectToggle {

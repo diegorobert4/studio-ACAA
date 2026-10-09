@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import ProjectSection from './ProjectSection';
 import ContactSection from './ContactSection';
 import ProjectModal from './ProjectModal';
+import { LanguageProvider } from '@/lib/i18n';
 
 export default function Portfolio({ projects }: { projects: Project[] }) {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -29,11 +30,11 @@ export default function Portfolio({ projects }: { projects: Project[] }) {
       behavior: 'smooth',
     });
   };
-  return <main className={styles.container} ref={containerRef} onScroll={handleScroll}>
+  return <LanguageProvider><main className={styles.container} ref={containerRef} onScroll={handleScroll}>
     <Navbar projects={projects} activeIndex={visibleProjectIndex} onSelectProject={selectProject} />
     <button className={styles.infoButton} onClick={() => setActiveProject(projects[visibleProjectIndex] ?? null)} disabled={!projects.length}>Ver información</button>
     {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} onOpenInfo={setActiveProject} onScrollToNext={handleScrollToNext} />)}
     <ContactSection />
     <ProjectModal project={activeProject} onClose={() => setActiveProject(null)} />
-  </main>;
+  </main></LanguageProvider>;
 }

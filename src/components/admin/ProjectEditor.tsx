@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { publicationTypeLabels, type Project, type Publication, type PublicationType } from '@/data';
+import { publicationTypeLabels, translatableFields, type Project, type Publication, type PublicationType, type TranslatableField } from '@/data';
 import { saveProject } from '@/app/actions/projects';
 import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 import { compressToWebp } from '@/lib/image-compress';
@@ -16,6 +16,8 @@ interface ProjectEditorProps {
   initialProject: Project | null;
   nextOrder: number;
 }
+
+const isTranslatable = (name: string): name is TranslatableField => (translatableFields as readonly string[]).includes(name);
 
 const publicationTypes = Object.keys(publicationTypeLabels) as PublicationType[];
 
@@ -56,6 +58,25 @@ function Section({
   );
 }
 
+// Selector de idioma de los campos traducibles (nombre, ubicación y créditos). El resto del formulario no cambia.
+function LanguageSwitch({ value, onChange }: { value: 'es' | 'it'; onChange: (language: 'es' | 'it') => void }) {
+  return (
+    <div role="group" aria-label="Idioma de los campos" className="flex items-center gap-1 self-start border border-neutral-200 p-0.5 font-mono text-xs uppercase tracking-widest">
+      {(['es', 'it'] as const).map((code) => (
+        <button
+          key={code}
+          type="button"
+          aria-pressed={value === code}
+          onClick={() => onChange(code)}
+          className={`px-3 py-1.5 transition-colors ${value === code ? 'bg-blueprint text-white' : 'text-neutral-500 hover:text-blueprint'}`}
+        >
+          {code === 'es' ? 'Español' : 'Italiano'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function Field({ label: text, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
@@ -88,6 +109,7 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
       images: [],
     };
   });
+  const [language, setLanguage] = useState<'es' | 'it'>('es');
   const [isUploading, setIsUploading] = useState(false);
   const [stage, setStage] = useState<'processing' | 'uploading'>('processing');
   const [uploadError, setUploadError] = useState('');
@@ -95,8 +117,17 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (language === 'it' && isTranslatable(name)) {
+      setProject({ ...project, translationIt: { ...project.translationIt, [name]: value } });
+      return;
+    }
     setProject({ ...project, [name]: value });
   };
+
+  // Valor y placeholder de los campos traducibles según el idioma elegido (en italiano se muestra el español como guía).
+  const isItalian = language === 'it';
+  const textValue = (name: TranslatableField) => (isItalian ? project.translationIt?.[name] : project[name]) ?? '';
+  const textPlaceholder = (name: TranslatableField) => (isItalian ? project[name] || undefined : undefined);
 
   const partnerLinks = project.partnerLinks ?? [];
   const publications = project.publications ?? [];
@@ -256,11 +287,12 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
 
       <div className="grid grid-cols-1 gap-6 lg:auto-rows-fr lg:grid-cols-2">
         <Section number="01" title="Información básica">
+          <LanguageSwitch value={language} onChange={setLanguage} />
           <Field label="Nombre del proyecto">
-            <input type="text" name="title" value={project.title} onChange={handleChange} className={input} />
+            <input type="text" name="title" value={textValue('title')} placeholder={textPlaceholder('title')} onChange={handleChange} className={input} />
           </Field>
           <Field label="Ubicación">
-            <input type="text" name="location" value={project.location} onChange={handleChange} className={input} />
+            <input type="text" name="location" value={textValue('location')} placeholder={textPlaceholder('location')} onChange={handleChange} className={input} />
           </Field>
           <div className="grid grid-cols-2 gap-6">
             <Field label="Año">
@@ -280,16 +312,18 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
         </Section>
 
         <Section number="02" title="Equipo y créditos">
+          <LanguageSwitch value={language} onChange={setLanguage} />
           <Field label="Arquitectos">
-            <input type="text" name="architects" value={project.architects} onChange={handleChange} className={input} />
+            <input type="text" name="architects" value={textValue('architects')} placeholder={textPlaceholder('architects')} onChange={handleChange} className={input} />
           </Field>
           <Field label="Arquitectos asociados">
-            <input type="text" name="associatedArchitects" value={project.associatedArchitects || ''} onChange={handleChange} className={input} />
+            <input type="text" name="associatedArchitects" value={textValue('associatedArchitects')} placeholder={textPlaceholder('associatedArchitects')} onChange={handleChange} className={input} />
           </Field>
           <Field label="Colaboradores">
             <textarea
               name="collaborators"
-              value={project.collaborators || ''}
+              value={textValue('collaborators')}
+              placeholder={textPlaceholder('collaborators')}
               onChange={handleChange}
               rows={3}
               className={`${input} resize-y`}

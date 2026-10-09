@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { Project } from '@/data';
+import type { Project, ProjectTranslation } from '@/data';
 import { statusToEstado } from '@/lib/project-status';
 import { IMAGES_BUCKET, imagePathFromUrl } from '@/lib/storage';
 import { createClient } from '@/lib/supabase/server';
@@ -29,6 +29,21 @@ async function getAdminClient() {
   return user ? supabase : null;
 }
 
+// Versión en italiano: upsert por proyecto_id. Si los 5 campos quedaron vacíos no se crea fila;
+// si ya había una, se la deja con nulls (la vista pública cae al español campo por campo).
+async function persistTranslationIt(supabase: NonNullable<Awaited<ReturnType<typeof getAdminClient>>>, projectId: string, translation: ProjectTranslation | undefined): Promise<ActionResult | null> {
+  const clean = (value?: string) => value?.trim() || null;
+  const values = {
+    nombre: clean(translation?.title), arquitectos: clean(translation?.architects), arquitectos_asociados: clean(translation?.associatedArchitects),
+    colaboradores: clean(translation?.collaborators), ubicacion: clean(translation?.location),
+  };
+  const isEmpty = Object.values(values).every((value) => value === null);
+  const { error } = isEmpty
+    ? await supabase.from('proyecto_traduccion_it').update(values).eq('proyecto_id', projectId)
+    : await supabase.from('proyecto_traduccion_it').upsert({ proyecto_id: projectId, ...values }, { onConflict: 'proyecto_id' });
+  return error ? fail('saveProject:traduccion-it', error, 'No se pudo guardar la traducción al italiano. Intentá de nuevo.') : null;
+}
+
 async function persistProject(project: Project): Promise<ActionResult> {
   const supabase = await getAdminClient();
   if (!supabase) return { error: SESSION_EXPIRED };
@@ -45,6 +60,8 @@ async function persistProject(project: Project): Promise<ActionResult> {
     '23514': 'Hay datos no válidos en el proyecto. Revisá el estado de avance, el año y la superficie.',
     '22003': 'La superficie o el año tienen un valor demasiado grande.',
   });
+  const translationFailure = await persistTranslationIt(supabase, data.id, project.translationIt);
+  if (translationFailure) return translationFailure;
   const { data: previousImages } = await supabase.from('imagenes_proyecto').select('url').eq('proyecto_id', data.id);
   const [removeImages, removeLinks, removePublications] = await Promise.all([
     supabase.from('imagenes_proyecto').delete().eq('proyecto_id', data.id),
