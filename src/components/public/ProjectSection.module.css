@@ -8,24 +8,23 @@
   background-color: var(--background);
 }
 
+/* Viewport de Embla: recorta lo que sobra; el swipe y el loop los maneja la librería. */
 .carousel {
-  display: flex;
   height: 100%;
   width: 100%;
-  overflow-x: scroll;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
+  overflow: hidden;
 }
-.carousel::-webkit-scrollbar {
-  visibility: hidden;
-  pointer-events: none;
+
+.carouselTrack {
+  display: flex;
+  height: 100%;
+  touch-action: pan-y pinch-zoom;
 }
 
 .slide {
-  min-width: 100vw;
+  flex: 0 0 100%;
+  min-width: 0;
   height: 100%;
-  scroll-snap-align: start;
   position: relative;
   overflow: hidden;
   background-color: #000;

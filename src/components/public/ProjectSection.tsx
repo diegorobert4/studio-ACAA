@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import useEmblaCarousel from 'embla-carousel-react';
 import { Project } from '@/data';
 import styles from './ProjectSection.module.css';
 import { ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -16,84 +17,70 @@ interface ProjectSectionProps {
 
 export default function ProjectSection({ project, index, onOpenInfo, onScrollToNext }: ProjectSectionProps) {
   const { language, statusLabel } = useLanguage();
+  const imageCount = project.images.length;
+  const isLooping = imageCount > 1;
+  // Embla se encarga del loop infinito (swipe, momentum y flechas); selectedScrollSnap() ya es el índice de la imagen real.
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, watchDrag: isLooping });
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
   // Proporción (ancho/alto) real de cada imagen, medida al cargar: en mobile el carrusel toma la proporción de la imagen activa.
   const [ratios, setRatios] = useState<Record<string, number>>({});
   const activeImage = project.images[activeImageIndex];
   const activeRatio = activeImage ? ratios[activeImage.id] : undefined;
 
-  const handleHorizontalScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const scrollPosition = target.scrollLeft;
-    const slideWidth = target.clientWidth;
-    const activeIndex = Math.round(scrollPosition / slideWidth);
-    
-    setActiveImageIndex(activeIndex);
-  };
+  useEffect(() => {
+    if (!emblaApi) return;
+    const onSelect = () => setActiveImageIndex(emblaApi.selectedScrollSnap());
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onSelect);
+    };
+  }, [emblaApi]);
 
-  const scrollToImage = (imageIndex: number) => {
-    if (carouselRef.current) {
-      const slideWidth = carouselRef.current.clientWidth;
-      carouselRef.current.scrollTo({
-        left: imageIndex * slideWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const scrollPrev = () => {
-    if (activeImageIndex > 0) {
-      scrollToImage(activeImageIndex - 1);
-    }
-  };
-
-  const scrollNext = () => {
-    if (activeImageIndex < project.images.length - 1) {
-      scrollToImage(activeImageIndex + 1);
-    }
-  };
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const scrollToImage = useCallback((imageIndex: number) => emblaApi?.scrollTo(imageIndex), [emblaApi]);
 
   return (
     <section
       className={styles.section}
       style={activeRatio ? ({ '--active-ratio': activeRatio } as React.CSSProperties) : undefined}
     >
-      <div 
-        ref={carouselRef}
-        className={styles.carousel} 
-        onScroll={handleHorizontalScroll}
-      >
-        {project.images.map((img, i) => (
-          <div key={img.id} className={styles.slide}>
-            <Image 
-              src={img.url} 
-              alt={`${project.title} - ${img.id}`}
-              fill
-              sizes="100vw"
-              quality={90}
-              className={styles.image}
-              priority={index === 0 && i === 0}
-              onLoad={(e) => {
-                const { naturalWidth, naturalHeight } = e.currentTarget;
-                if (naturalWidth && naturalHeight) setRatios((current) => ({ ...current, [img.id]: naturalWidth / naturalHeight }));
-              }}
-            />
-          </div>
-        ))}
+      <div ref={emblaRef} className={styles.carousel}>
+        <div className={styles.carouselTrack}>
+          {project.images.map((img, i) => (
+            <div key={img.id} className={styles.slide}>
+              <Image
+                src={img.url}
+                alt={`${project.title} - ${img.id}`}
+                fill
+                sizes="100vw"
+                quality={90}
+                className={styles.image}
+                priority={index === 0 && i === 0}
+                onLoad={(e) => {
+                  const { naturalWidth, naturalHeight } = e.currentTarget;
+                  if (naturalWidth && naturalHeight) setRatios((current) => ({ ...current, [img.id]: naturalWidth / naturalHeight }));
+                }}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className={styles.overlay}>
         <div className={styles.navArrows}>
           <button 
-            className={`${styles.navArrow} ${activeImageIndex === 0 ? styles.navArrowHidden : ''}`} 
+            className={`${styles.navArrow} ${!isLooping ? styles.navArrowHidden : ''}`}
             onClick={scrollPrev}
             aria-label="Imagen anterior"
           >
             <ChevronLeft size={32} />
           </button>
           <button 
-            className={`${styles.navArrow} ${activeImageIndex === project.images.length - 1 ? styles.navArrowHidden : ''}`} 
+            className={`${styles.navArrow} ${!isLooping ? styles.navArrowHidden : ''}`}
             onClick={scrollNext}
             aria-label="Siguiente imagen"
           >
