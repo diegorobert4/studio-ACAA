@@ -1,5 +1,7 @@
 export const IMAGES_BUCKET = 'imagenes-proyectos';
-export const IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+// Máximo del archivo original (antes de comprimir); IMAGE_MAX_BYTES se aplica al WebP ya comprimido.
+export const IMAGE_MAX_ORIGINAL_BYTES = 20 * 1024 * 1024;
+export const IMAGE_MAX_BYTES = 3 * 1024 * 1024;
 export const IMAGE_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

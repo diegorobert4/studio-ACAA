@@ -8,7 +8,7 @@ import { publicationTypeLabels, translatableFields, type Project, type Publicati
 import { saveProject } from '@/app/actions/projects';
 import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 import { compressToWebp } from '@/lib/image-compress';
-import { IMAGES_BUCKET, IMAGE_MAX_BYTES, IMAGE_TYPES, imagePathFromUrl, storageErrorMessage } from '@/lib/storage';
+import { IMAGES_BUCKET, IMAGE_MAX_BYTES, IMAGE_MAX_ORIGINAL_BYTES, IMAGE_TYPES, imagePathFromUrl, storageErrorMessage } from '@/lib/storage';
 import { Upload, ChevronUp, ChevronDown, Plus, X } from 'lucide-react';
 
 interface ProjectEditorProps {
@@ -21,8 +21,15 @@ const isTranslatable = (name: string): name is TranslatableField => (translatabl
 
 const publicationTypes = Object.keys(publicationTypeLabels) as PublicationType[];
 
-const sizeError = (name: string, bytes: number) =>
-  `"${name}": pesa ${(bytes / 1024 / 1024).toFixed(1)} MB y el máximo es ${IMAGE_MAX_BYTES / 1024 / 1024} MB.`;
+const toMb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1);
+
+// Rechazo antes de comprimir: el archivo original es demasiado grande para procesarlo.
+const originalSizeError = (name: string, bytes: number) =>
+  `"${name}": el archivo original pesa ${toMb(bytes)} MB y el máximo para subir es ${IMAGE_MAX_ORIGINAL_BYTES / 1024 / 1024} MB.`;
+
+// Rechazo después de comprimir: ni siquiera convertida a WebP baja del límite.
+const compressedSizeError = (name: string, bytes: number) =>
+  `"${name}": aun comprimida pesa ${toMb(bytes)} MB y el máximo es ${IMAGE_MAX_BYTES / 1024 / 1024} MB. Probá con una imagen de menor resolución.`;
 
 const label = 'font-mono text-xs uppercase tracking-widest text-neutral-500';
 const input =
@@ -161,8 +168,8 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
         errors.push(`"${file.name}": formato no permitido (solo JPG, PNG o WebP).`);
         return false;
       }
-      if (file.size > IMAGE_MAX_BYTES) {
-        errors.push(sizeError(file.name, file.size));
+      if (file.size > IMAGE_MAX_ORIGINAL_BYTES) {
+        errors.push(originalSizeError(file.name, file.size));
         return false;
       }
       return true;
@@ -176,7 +183,7 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
     for (const file of valid) {
       try {
         const blob = await compressToWebp(file);
-        if (blob.size > IMAGE_MAX_BYTES) errors.push(sizeError(file.name, blob.size));
+        if (blob.size > IMAGE_MAX_BYTES) errors.push(compressedSizeError(file.name, blob.size));
         else processed.push({ name: file.name, blob });
       } catch (error) {
         errors.push(`"${file.name}": ${error instanceof Error ? error.message : 'no se pudo procesar la imagen.'}`);

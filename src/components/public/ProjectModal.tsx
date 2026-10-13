@@ -37,9 +37,12 @@ export default function ProjectModal({ project: baseProject, onClose }: ProjectM
               ))}
             </div>
             <h2>{project.title}</h2>
-            <span className={styles.status}>{statusLabel(project.status)}</span>
-            
+
             <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <h3>{t.status}</h3>
+                <p>{statusLabel(project.status)}</p>
+              </div>
               <div className={styles.infoItem}>
                 <h3>{t.architects}</h3>
                 <p>{project.architects}</p>

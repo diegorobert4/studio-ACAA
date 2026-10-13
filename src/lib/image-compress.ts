@@ -1,5 +1,5 @@
-export const IMAGE_MAX_WIDTH = 3200;
-export const IMAGE_WEBP_QUALITY = 0.82;
+export const IMAGE_MAX_WIDTH = 1920;
+export const IMAGE_WEBP_QUALITY = 0.76;
 
 // Reduce a IMAGE_MAX_WIDTH (sin agrandar) y reencodea a WebP en el navegador.
 export async function compressToWebp(file: File): Promise<Blob> {

@@ -41,7 +41,7 @@
     height: auto;
     max-height: 85dvh;
     padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
-    border-radius: 16px 16px 0 0;
+    border-radius: 0;
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
     transform: translateY(100%);
   }
