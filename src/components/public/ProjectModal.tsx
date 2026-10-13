@@ -1,6 +1,7 @@
-import { X } from 'lucide-react';
+import { Fragment } from 'react';
 import { Project } from '@/data';
-import { localizeProject, useLanguage } from '@/lib/i18n';
+import { localizeProject, useLanguage, type Language } from '@/lib/i18n';
+import SidePanel from './SidePanel';
 import styles from './ProjectModal.module.css';
 
 interface ProjectModalProps {
@@ -8,20 +9,33 @@ interface ProjectModalProps {
   onClose: () => void;
 }
 
+const languages: { code: Language; label: string }[] = [
+  { code: 'es', label: 'ESP' },
+  { code: 'it', label: 'IT' },
+];
+
 export default function ProjectModal({ project: baseProject, onClose }: ProjectModalProps) {
-  const { language, t, statusLabel } = useLanguage();
+  const { language, setLanguage, t, statusLabel } = useLanguage();
   const project = baseProject && localizeProject(baseProject, language);
   return (
-    <div className={`${styles.infoModal} ${project ? styles.infoModalOpen : ''}`}>
+    <SidePanel open={!!project} onClose={onClose}>
       {project && (
-        <>
-          <button 
-            className={styles.closeBtn}
-            onClick={onClose}
-          >
-            <X size={24} />
-          </button>
           <div className={styles.modalContent}>
+            <div className={styles.langToggle} role="group" aria-label="Idioma / Lingua">
+              {languages.map(({ code, label }, i) => (
+                <Fragment key={code}>
+                  {i > 0 && <span className={styles.langSep} aria-hidden="true">/</span>}
+                  <button
+                    type="button"
+                    className={`${styles.langOption} ${code === language ? styles.langActive : ''}`}
+                    onClick={() => setLanguage(code)}
+                    aria-pressed={code === language}
+                  >
+                    {label}
+                  </button>
+                </Fragment>
+              ))}
+            </div>
             <h2>{project.title}</h2>
             <span className={styles.status}>{statusLabel(project.status)}</span>
             
@@ -70,8 +84,7 @@ export default function ProjectModal({ project: baseProject, onClose }: ProjectM
               )}
             </div>
           </div>
-        </>
       )}
-    </div>
+    </SidePanel>
   );
 }

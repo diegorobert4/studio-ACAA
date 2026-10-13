@@ -31,6 +31,8 @@
 }
 
 :root {
+  /* Ancho del panel lateral (SidePanel) en desktop; también ubica las flechas verticales a su izquierda. */
+  --side-panel-width: 450px;
   --background: #ffffff;
   --foreground: #111111;
   --gray-100: #f4f4f5;

@@ -11,10 +11,12 @@ const dictionary = {
   es: {
     architects: 'Arquitectos', associatedArchitects: 'Arquitectos Asociados', collaborators: 'Colaboradores', location: 'Ubicación',
     year: 'Año', area: 'Superficie', instagram: 'Instagram', publications: 'Publicaciones', viewPost: 'Ver publicación',
+    viewInfo: 'Ver información', projects: 'Proyectos', openMenu: 'Abrir menú',
   },
   it: {
     architects: 'Architetti', associatedArchitects: 'Architetti associati', collaborators: 'Collaboratori', location: 'Ubicazione',
     year: 'Anno', area: 'Superficie', instagram: 'Instagram', publications: 'Pubblicazioni', viewPost: 'Vedi pubblicazione',
+    viewInfo: 'Vedi informazioni', projects: 'Progetti', openMenu: 'Apri menu',
   },
 } as const;
 

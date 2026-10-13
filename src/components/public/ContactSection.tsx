@@ -23,7 +23,7 @@ export default function ContactSection() {
   return (
     <section className={styles.contactSection}>
       <div className={styles.contactBox}>
-        <h2 className={styles.contactTitle}>Trabajemos<br/>juntos.</h2>
+        <h2 className={styles.contactTitle}>Contactanos</h2>
         <form className={styles.contactForm}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Nombre</label>

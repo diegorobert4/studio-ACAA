@@ -7,34 +7,50 @@ import Navbar from './Navbar';
 import ProjectSection from './ProjectSection';
 import ContactSection from './ContactSection';
 import ProjectModal from './ProjectModal';
+import ProjectMenu from './ProjectMenu';
 import { LanguageProvider } from '@/lib/i18n';
 
 export default function Portfolio({ projects }: { projects: Project[] }) {
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  // Un solo panel lateral a la vez: abrir uno cierra el otro.
+  const [panel, setPanel] = useState<'info' | 'menu' | null>(null);
+  const [infoProject, setInfoProject] = useState<Project | null>(null);
   const [visibleProjectIndex, setVisibleProjectIndex] = useState(0);
+  const openInfo = (project: Project | null) => {
+    setInfoProject(project);
+    setPanel(project ? 'info' : null);
+  };
+  const closePanel = () => setPanel(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleScrollToNext = (e: React.MouseEvent) => {
     e.preventDefault();
     // Baja a la sección hermana siguiente: el próximo proyecto, o Contacto tras el último.
     e.currentTarget.closest('section')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+  const handleScrollToPrevious = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Sube a la sección hermana anterior (solo si es otro proyecto).
+    const previous = e.currentTarget.closest('section')?.previousElementSibling;
+    if (previous?.tagName === 'SECTION') previous.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   const handleScroll = () => {
     if (!containerRef.current) return;
-    const index = Math.round(containerRef.current.scrollTop / containerRef.current.clientHeight);
-    setVisibleProjectIndex(Math.min(index, Math.max(projects.length - 1, 0)));
+    // La sección visible es la que cruza el centro del contenedor (en mobile las secciones tienen alturas distintas).
+    const container = containerRef.current.getBoundingClientRect();
+    const center = container.top + container.height / 2;
+    const sections = Array.from(containerRef.current.querySelectorAll('section')).slice(0, projects.length);
+    const index = sections.findIndex((section) => section.getBoundingClientRect().bottom > center);
+    setVisibleProjectIndex(index === -1 ? Math.max(sections.length - 1, 0) : index);
   };
   const selectProject = (index: number) => {
     setVisibleProjectIndex(index);
-    containerRef.current?.scrollTo({
-      top: index * containerRef.current.clientHeight,
-      behavior: 'smooth',
-    });
+    setPanel(null);
+    containerRef.current?.querySelectorAll('section')[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   return <LanguageProvider><main className={styles.container} ref={containerRef} onScroll={handleScroll}>
-    <Navbar projects={projects} activeIndex={visibleProjectIndex} onSelectProject={selectProject} />
-    <button className={styles.infoButton} onClick={() => setActiveProject(projects[visibleProjectIndex] ?? null)} disabled={!projects.length}>Ver información</button>
-    {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} onOpenInfo={setActiveProject} onScrollToNext={handleScrollToNext} />)}
+    <Navbar onOpenMenu={() => setPanel('menu')} />
+    {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} onOpenInfo={openInfo} onScrollToNext={handleScrollToNext} onScrollToPrevious={handleScrollToPrevious} />)}
     <ContactSection />
-    <ProjectModal project={activeProject} onClose={() => setActiveProject(null)} />
+    <ProjectModal project={panel === 'info' ? infoProject : null} onClose={closePanel} />
+    <ProjectMenu open={panel === 'menu'} projects={projects} activeIndex={visibleProjectIndex} onSelectProject={selectProject} onClose={closePanel} />
   </main></LanguageProvider>;
 }

@@ -104,10 +104,10 @@
 /* Mobile: una sola columna, caja más compacta y footer apilado. */
 @media (max-width: 768px) {
   .contactSection {
+    /* Altura según el contenido: sin min-height de pantalla completa, que dejaba gris vacío arriba y abajo. */
     height: auto;
-    min-height: 100dvh;
     width: 100%;
-    padding: 4.5rem 1rem 1.5rem;
+    padding: 3.5rem 1rem 1.5rem;
   }
 
   .contactBox {
