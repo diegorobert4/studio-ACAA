@@ -285,6 +285,11 @@
     position: static;
   }
 
+  /* En mobile la flecha que queda visible se apoya abajo en vez de dejar un hueco. */
+  .verticalArrowHidden {
+    display: none;
+  }
+
   .bottomArea {
     left: 1rem;
     right: 1rem;

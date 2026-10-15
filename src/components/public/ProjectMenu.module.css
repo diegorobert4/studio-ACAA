@@ -1,6 +1,30 @@
-.heading {
+/* Cabecera con pestañas "Proyectos / Contacto": mismo tamaño que el título de los otros paneles; la inactiva queda atenuada. */
+.tabs {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   margin-bottom: 1.5rem;
+}
+
+.tab {
+  font: inherit;
+  letter-spacing: inherit;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+.tab:hover,
+.tabActive {
+  opacity: 1;
+}
+
+.tabSep {
+  opacity: 0.4;
 }
 
 .list {
@@ -33,7 +57,7 @@
 }
 
 @media (max-width: 768px) {
-  .heading {
+  .tabs {
     font-size: clamp(1.375rem, 6vw, 1.75rem);
     line-height: 1.15;
     margin-bottom: 1rem;

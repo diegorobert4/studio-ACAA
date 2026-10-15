@@ -54,12 +54,13 @@ function luminanceBehind(img: HTMLImageElement, section: DOMRect, title: DOMRect
 interface ProjectSectionProps {
   project: Project;
   index: number;
+  isLast: boolean;
   onOpenInfo: (project: Project) => void;
   onScrollToNext: (e: React.MouseEvent, index: number) => void;
   onScrollToPrevious: (e: React.MouseEvent, index: number) => void;
 }
 
-export default function ProjectSection({ project, index, onOpenInfo, onScrollToNext, onScrollToPrevious }: ProjectSectionProps) {
+export default function ProjectSection({ project, index, isLast, onOpenInfo, onScrollToNext, onScrollToPrevious }: ProjectSectionProps) {
   const { language, t } = useLanguage();
   const imageCount = project.images.length;
   const isLooping = imageCount > 1;
@@ -197,8 +198,9 @@ export default function ProjectSection({ project, index, onOpenInfo, onScrollToN
             <ArrowUp size={18} />
           </button>
           <button
-            className={`${styles.verticalArrow} ${styles.arrowDown}`}
+            className={`${styles.verticalArrow} ${styles.arrowDown} ${isLast ? styles.verticalArrowHidden : ''}`}
             onClick={(e) => onScrollToNext(e, index)}
+            tabIndex={isLast ? -1 : undefined}
             aria-label="Next project"
           >
             <ArrowDown size={18} />

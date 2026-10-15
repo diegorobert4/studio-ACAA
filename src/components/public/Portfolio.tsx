@@ -5,7 +5,6 @@ import type { Project } from '@/data';
 import styles from '@/app/page.module.css';
 import Navbar from './Navbar';
 import ProjectSection from './ProjectSection';
-import ContactSection from './ContactSection';
 import ProjectModal from './ProjectModal';
 import ProjectMenu from './ProjectMenu';
 import { LanguageProvider } from '@/lib/i18n';
@@ -23,8 +22,9 @@ export default function Portfolio({ projects }: { projects: Project[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const handleScrollToNext = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Baja a la sección hermana siguiente: el próximo proyecto, o Contacto tras el último.
-    e.currentTarget.closest('section')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Baja a la sección hermana siguiente (solo si es otro proyecto).
+    const next = e.currentTarget.closest('section')?.nextElementSibling;
+    if (next?.tagName === 'SECTION') next.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   const handleScrollToPrevious = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,8 +48,7 @@ export default function Portfolio({ projects }: { projects: Project[] }) {
   };
   return <LanguageProvider><main className={styles.container} ref={containerRef} onScroll={handleScroll}>
     <Navbar onOpenMenu={() => setPanel('menu')} />
-    {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} onOpenInfo={openInfo} onScrollToNext={handleScrollToNext} onScrollToPrevious={handleScrollToPrevious} />)}
-    <ContactSection />
+    {projects.map((project, index) => <ProjectSection key={project.id} project={project} index={index} isLast={index === projects.length - 1} onOpenInfo={openInfo} onScrollToNext={handleScrollToNext} onScrollToPrevious={handleScrollToPrevious} />)}
     <ProjectModal project={panel === 'info' ? infoProject : null} onClose={closePanel} />
     <ProjectMenu open={panel === 'menu'} projects={projects} activeIndex={visibleProjectIndex} onSelectProject={selectProject} onClose={closePanel} />
   </main></LanguageProvider>;

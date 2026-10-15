@@ -12,11 +12,15 @@ const dictionary = {
     architects: 'Arquitectos', associatedArchitects: 'Arquitectos Asociados', collaborators: 'Colaboradores', location: 'Ubicación',
     year: 'Año', area: 'Superficie', instagram: 'Instagram', publications: 'Publicaciones', viewPost: 'Ver publicación',
     viewInfo: 'Ver información', status: 'Estado', projects: 'Proyectos', openMenu: 'Abrir menú',
+    contact: 'Contacto', contactName: 'Nombre', contactNamePlaceholder: 'Tu nombre', contactEmail: 'Correo', contactEmailPlaceholder: 'tu@correo.com',
+    contactMessage: 'Mensaje', contactMessagePlaceholder: 'Cuéntanos sobre tu proyecto...', contactSend: 'Enviar',
   },
   it: {
     architects: 'Architetti', associatedArchitects: 'Architetti associati', collaborators: 'Collaboratori', location: 'Ubicazione',
     year: 'Anno', area: 'Superficie', instagram: 'Instagram', publications: 'Pubblicazioni', viewPost: 'Vedi pubblicazione',
     viewInfo: 'Vedi informazioni', status: 'Stato', projects: 'Progetti', openMenu: 'Apri menu',
+    contact: 'Contatti', contactName: 'Nome', contactNamePlaceholder: 'Il tuo nome', contactEmail: 'Email', contactEmailPlaceholder: 'tu@email.com',
+    contactMessage: 'Messaggio', contactMessagePlaceholder: 'Raccontaci del tuo progetto...', contactSend: 'Invia',
   },
 } as const;
 
