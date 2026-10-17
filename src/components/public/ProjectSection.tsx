@@ -5,7 +5,7 @@ import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import { Project } from '@/data';
 import styles from './ProjectSection.module.css';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus } from 'lucide-react';
 import { localizeProject, useLanguage } from '@/lib/i18n';
 
 // Luminancia relativa (WCAG) bajo la cual el texto blanco contrasta más que el negro.
@@ -64,7 +64,7 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
   const { language, t } = useLanguage();
   const imageCount = project.images.length;
   const isLooping = imageCount > 1;
-  // Embla se encarga del loop infinito (swipe, momentum y flechas); selectedScrollSnap() ya es el índice de la imagen real.
+  // Embla se encarga del loop infinito (swipe, momentum y dots); selectedScrollSnap() ya es el índice de la imagen real.
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, watchDrag: isLooping });
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   // Proporción (ancho/alto) real de cada imagen, medida al cargar: en mobile el carrusel toma la proporción de la imagen activa.
@@ -109,8 +109,6 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
     };
   }, [emblaApi]);
 
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
   const scrollToImage = useCallback((imageIndex: number) => emblaApi?.scrollTo(imageIndex), [emblaApi]);
 
   return (
@@ -144,23 +142,6 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
       </div>
 
       <div className={`${styles.overlay} ${darkTitle ? styles.overlayDarkTitle : ''}`}>
-        <div className={styles.navArrows}>
-          <button 
-            className={`${styles.navArrow} ${!isLooping ? styles.navArrowHidden : ''}`}
-            onClick={scrollPrev}
-            aria-label="Imagen anterior"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button 
-            className={`${styles.navArrow} ${!isLooping ? styles.navArrowHidden : ''}`}
-            onClick={scrollNext}
-            aria-label="Siguiente imagen"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-
         <button
           className={styles.infoBtn}
           onClick={() => onOpenInfo(project)}
