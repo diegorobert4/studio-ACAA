@@ -27,7 +27,7 @@
   pointer-events: auto;
 }
 
-.projectMenu { position: fixed; top: var(--nav-pad); right: var(--nav-pad); height: var(--nav-h); display: flex; align-items: center; gap: 0.5rem; z-index: 101; }
+.projectMenu { position: fixed; top: var(--nav-pad); left: var(--nav-pad); height: var(--nav-h); display: flex; align-items: center; gap: 0.5rem; z-index: 101; }
 /* Hamburguesa: 36px en desktop, 24px en mobile. */
 .projectToggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background-color: rgba(0, 0, 0, 0.3); color: white; backdrop-filter: blur(4px); border-radius: 50%; transition: background-color 0.2s; }
 .projectToggle:hover { background-color: rgba(0, 0, 0, 0.8); }
@@ -38,7 +38,7 @@
   }
 
   .projectMenu {
-    right: 1rem;
+    left: 1rem;
   }
 
   .logo {

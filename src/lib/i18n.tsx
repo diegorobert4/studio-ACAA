@@ -11,6 +11,7 @@ const dictionary = {
   es: {
     architects: 'Arquitectos', associatedArchitects: 'Arquitectos Asociados', collaborators: 'Colaboradores', location: 'Ubicación',
     year: 'Año', area: 'Superficie', instagram: 'Instagram', publications: 'Publicaciones', viewPost: 'Ver publicación',
+    imageCredits: 'Créditos de imágenes',
     viewInfo: 'Ver información', status: 'Estado', projects: 'Proyectos', openMenu: 'Abrir menú',
     contact: 'Contacto', contactName: 'Nombre', contactNamePlaceholder: 'Tu nombre', contactEmail: 'Correo', contactEmailPlaceholder: 'tu@correo.com',
     contactMessage: 'Mensaje', contactMessagePlaceholder: 'Cuéntanos sobre tu proyecto...', contactSend: 'Enviar',
@@ -18,13 +19,15 @@ const dictionary = {
   it: {
     architects: 'Architetti', associatedArchitects: 'Architetti associati', collaborators: 'Collaboratori', location: 'Ubicazione',
     year: 'Anno', area: 'Superficie', instagram: 'Instagram', publications: 'Pubblicazioni', viewPost: 'Vedi pubblicazione',
+    imageCredits: 'Crediti fotografici',
     viewInfo: 'Vedi informazioni', status: 'Stato', projects: 'Progetti', openMenu: 'Apri menu',
     contact: 'Contatti', contactName: 'Nome', contactNamePlaceholder: 'Il tuo nome', contactEmail: 'Email', contactEmailPlaceholder: 'tu@email.com',
     contactMessage: 'Messaggio', contactMessagePlaceholder: 'Raccontaci del tuo progetto...', contactSend: 'Invia',
   },
 } as const;
 
-const statusLabels: Record<Language, Record<ProjectStatus, string>> = {
+// Estado es texto libre: solo los valores históricos tienen traducción; cualquier otro se muestra tal cual.
+const statusLabels: Record<Language, Record<string, string>> = {
   es: { Completado: 'Completado', 'En obra': 'En obra', Anteproyecto: 'Anteproyecto' },
   it: { Completado: 'Completato', 'En obra': 'In costruzione', Anteproyecto: 'In progetto' },
 };
@@ -43,7 +46,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   const { language, setLanguage } = useContext(LanguageContext);
-  return { language, setLanguage, t: dictionary[language], statusLabel: (status: ProjectStatus) => statusLabels[language][status] };
+  return { language, setLanguage, t: dictionary[language], statusLabel: (status: ProjectStatus) => statusLabels[language][status] ?? status };
 }
 
 // En italiano, cada campo traducido que esté vacío o sin fila cae al español, sin mostrar nada raro.

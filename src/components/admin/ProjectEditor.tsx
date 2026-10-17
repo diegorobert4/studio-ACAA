@@ -65,7 +65,7 @@ function Section({
   );
 }
 
-// Selector de idioma de los campos traducibles (nombre, ubicación y créditos). El resto del formulario no cambia.
+// Selector de idioma de los campos traducibles (nombre, ubicación, descripción y créditos). El resto del formulario no cambia.
 function LanguageSwitch({ value, onChange }: { value: 'es' | 'it'; onChange: (language: 'es' | 'it') => void }) {
   return (
     <div role="group" aria-label="Idioma de los campos" className="flex items-center gap-1 self-start border border-neutral-200 p-0.5 font-mono text-xs uppercase tracking-widest">
@@ -292,7 +292,7 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:auto-rows-fr lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Section number="01" title="Información básica">
           <LanguageSwitch value={language} onChange={setLanguage} />
           <Field label="Nombre del proyecto">
@@ -310,11 +310,10 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
             </Field>
           </div>
           <Field label="Estado de avance">
-            <select name="status" value={project.status} onChange={handleChange} className={input}>
-              <option value="Anteproyecto">En proyecto</option>
-              <option value="En obra">En construcción</option>
-              <option value="Completado">Completado</option>
-            </select>
+            <input type="text" name="status" value={project.status} onChange={handleChange} placeholder="Ej.: Anteproyecto, En obra, Completado" className={input} />
+          </Field>
+          <Field label="Descripción">
+            <textarea name="description" value={textValue('description')} placeholder={textPlaceholder('description')} onChange={handleChange} rows={4} className={`${input} resize-y`} />
           </Field>
         </Section>
 
@@ -335,6 +334,9 @@ export default function ProjectEditor({ id, initialProject, nextOrder }: Project
               rows={3}
               className={`${input} resize-y`}
             />
+          </Field>
+          <Field label="Créditos de imágenes">
+            <textarea name="imageCredits" value={textValue('imageCredits')} placeholder={textPlaceholder('imageCredits')} onChange={handleChange} rows={2} className={`${input} resize-y`} />
           </Field>
         </Section>
 

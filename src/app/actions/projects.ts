@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Project, ProjectTranslation } from '@/data';
-import { statusToEstado } from '@/lib/project-status';
 import { IMAGES_BUCKET, imagePathFromUrl } from '@/lib/storage';
 import { createClient } from '@/lib/supabase/server';
 
@@ -29,13 +28,14 @@ async function getAdminClient() {
   return user ? supabase : null;
 }
 
-// Versión en italiano: upsert por proyecto_id. Si los 5 campos quedaron vacíos no se crea fila;
+// Versión en italiano: upsert por proyecto_id. Si todos los campos quedaron vacíos no se crea fila;
 // si ya había una, se la deja con nulls (la vista pública cae al español campo por campo).
 async function persistTranslationIt(supabase: NonNullable<Awaited<ReturnType<typeof getAdminClient>>>, projectId: string, translation: ProjectTranslation | undefined): Promise<ActionResult | null> {
   const clean = (value?: string) => value?.trim() || null;
   const values = {
     nombre: clean(translation?.title), arquitectos: clean(translation?.architects), arquitectos_asociados: clean(translation?.associatedArchitects),
     colaboradores: clean(translation?.collaborators), ubicacion: clean(translation?.location),
+    descripcion: clean(translation?.description), creditos_imagenes: clean(translation?.imageCredits),
   };
   const isEmpty = Object.values(values).every((value) => value === null);
   const { error } = isEmpty
@@ -51,10 +51,10 @@ async function persistProject(project: Project): Promise<ActionResult> {
   const surface = Number.parseFloat(project.area.replace(',', '.').replace(/[^0-9.]/g, ''));
   const year = Number.parseInt(project.year, 10);
   const { data, error } = await supabase.from('proyectos').upsert({
-    id: project.id, nombre: project.title.trim(), estado: statusToEstado(project.status), publicado: project.published, orden: project.order, actualizado_en: new Date().toISOString(),
+    id: project.id, nombre: project.title.trim(), estado: project.status.trim(), publicado: project.published, orden: project.order, actualizado_en: new Date().toISOString(),
     ubicacion: project.location.trim() || null, anio: Number.isNaN(year) ? null : year, superficie: Number.isNaN(surface) ? null : surface,
     arquitectos: project.architects.trim() || null, arquitectos_asociados: project.associatedArchitects?.trim() || null,
-    colaboradores: project.collaborators?.trim() || null, instagram_url: project.instagramUrl?.trim() || null,
+    colaboradores: project.collaborators?.trim() || null, descripcion: project.description?.trim() || null, creditos_imagenes: project.imageCredits?.trim() || null, instagram_url: project.instagramUrl?.trim() || null,
   }).select('id').single();
   if (error) return fail('saveProject:proyectos', error, 'No se pudo guardar el proyecto. Intentá de nuevo.', {
     '23514': 'Hay datos no válidos en el proyecto. Revisá el estado de avance, el año y la superficie.',

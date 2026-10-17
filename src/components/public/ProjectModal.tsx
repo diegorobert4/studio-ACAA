@@ -37,6 +37,7 @@ export default function ProjectModal({ project: baseProject, onClose }: ProjectM
               ))}
             </div>
             <h2>{project.title}</h2>
+            {project.description && <p className={styles.description}>{project.description}</p>}
 
             <div className={styles.infoGrid}>
               <div className={styles.infoItem}>
@@ -83,6 +84,12 @@ export default function ProjectModal({ project: baseProject, onClose }: ProjectM
                   {project.publications.map((pub, i) => (
                     <p key={i}>{pub.name}</p>
                   ))}
+                </div>
+              )}
+              {project.imageCredits && (
+                <div className={styles.infoItem}>
+                  <h3>{t.imageCredits}</h3>
+                  <p className={styles.credits}>{project.imageCredits}</p>
                 </div>
               )}
             </div>

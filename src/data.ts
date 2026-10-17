@@ -1,4 +1,5 @@
-export type ProjectStatus = 'Completado' | 'En obra' | 'Anteproyecto';
+// Texto libre (columna estado de proyectos). Los valores históricos ('Completado', 'En obra', 'Anteproyecto') tienen traducción al italiano en i18n.tsx.
+export type ProjectStatus = string;
 
 // Los valores coinciden con el check publicaciones_tipo_check de Supabase.
 export type PublicationType =
@@ -29,7 +30,7 @@ export interface ProjectImage {
 }
 
 // Campos de Project que tienen versión en italiano (tabla proyecto_traduccion_it).
-export const translatableFields = ['title', 'architects', 'associatedArchitects', 'collaborators', 'location'] as const;
+export const translatableFields = ['title', 'architects', 'associatedArchitects', 'collaborators', 'location', 'description', 'imageCredits'] as const;
 export type TranslatableField = (typeof translatableFields)[number];
 export type ProjectTranslation = Partial<Record<TranslatableField, string>>;
 
@@ -46,6 +47,8 @@ export interface Project {
   architects: string;
   associatedArchitects?: string;
   collaborators?: string;
+  description?: string;
+  imageCredits?: string;
   instagramUrl?: string;
   partnerLinks?: string[];
   publications?: Publication[];

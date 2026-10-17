@@ -49,11 +49,10 @@
   padding: 2rem;
 }
 
-/* "+" por proyecto, a la izquierda de la hamburguesa fija del Navbar (hueco reservado ahí). */
+/* "+" por proyecto, pegado a la izquierda del título (en el mismo eje vertical que la hamburguesa fija del Navbar). */
 .infoBtn {
-  position: absolute;
-  top: calc(2rem - 4px);
-  right: calc(2rem + 36px + 0.5rem);
+  position: relative;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,12 +81,14 @@
 
 .projectHeader {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .projectTitle {
   color: white;
   font-size: 2.5rem;
+  line-height: 1.2;
   font-weight: 700;
   transition: color 0.3s;
 }
@@ -97,7 +98,7 @@
   color: #000;
 }
 
-/* Flechas arriba/abajo en la franja a la izquierda del borde donde aparece el SidePanel (posición fija, esté o no abierto). */
+/* Flechas arriba/abajo en la franja a la izquierda del borde donde aparece el SidePanel (posición fija, esté o no abierto). Misma altura que la hamburguesa (arriba) y que el "+" y el título (abajo), sin solaparse con ellos. */
 .verticalNav {
   position: absolute;
   inset: 0;
@@ -110,13 +111,14 @@
   right: calc(var(--side-panel-width) + 1rem);
 }
 
-/* Arriba: centrada con la fila del Navbar (padding 2rem + mitad de 1.75rem, menos la mitad de los 30px de la flecha). */
+/* Arriba: centrada con la hamburguesa (padding 2rem + mitad de 1.75rem, menos la mitad de los 30px de la flecha). */
 .arrowUp {
   top: calc(2rem - 1px);
 }
 
+/* Abajo: centrada con el "+" y el título, que comparten una fila de 48px (2.5rem × line-height 1.2) apoyada en bottom 2rem. */
 .arrowDown {
-  bottom: 2rem;
+  bottom: calc(2rem + 9px);
 }
 
 /* En la primera sección no hay anterior: se oculta pero conserva el lugar para que la de abajo no se mueva. */
@@ -128,7 +130,7 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0.5rem;
+  bottom: 0.75rem;
   display: flex;
   gap: 0.5rem;
   pointer-events: auto;
@@ -152,6 +154,15 @@
 
 .dotActive {
   background-color: white;
+}
+
+/* Fondo claro detrás de los dots: se pasan a negro (se decide en ProjectSection.tsx midiendo la imagen). */
+.dotsDark .dot {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dotsDark .dotActive {
+  background-color: #000;
 }
 
 .verticalArrow {
@@ -186,7 +197,6 @@
     height: auto;
     width: 100%;
     scroll-snap-align: none;
-    margin-bottom: 0.25rem;
     background-color: #000;
   }
 
@@ -223,7 +233,7 @@
   .bottomArea {
     left: 1rem;
     right: 1rem;
-    bottom: 1rem;
+    bottom: 1.125rem;
   }
 
   .projectTitle {
@@ -245,9 +255,11 @@
     height: 6px;
   }
 
+  .projectHeader {
+    gap: 0.5rem;
+  }
+
   .infoBtn {
-    top: calc(1rem - 2px);
-    right: calc(2rem + 24px);
     width: 24px;
     height: 24px;
     /* Más opaco + borde sutil para distinguirse sobre fotos claras. */

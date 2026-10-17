@@ -73,6 +73,9 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
   const activeRatio = activeImage ? ratios[activeImage.id] : undefined;
   // Color del título: blanco u oscuro, según el brillo real de la imagen detrás de él.
   const [darkTitle, setDarkTitle] = useState(false);
+  // Los dots usan la misma detección que el título, medida sobre la zona que ocupan.
+  const [darkDots, setDarkDots] = useState(false);
+  const dotsRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
@@ -81,12 +84,18 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
   const measureTitleBackground = useCallback(() => {
     const img = imageRefs.current[activeImageIndex];
     if (!img || !img.complete || !sectionRef.current || !titleRef.current) return;
+    const sectionRect = sectionRef.current.getBoundingClientRect();
     try {
-      const luminance = luminanceBehind(img, sectionRef.current.getBoundingClientRect(), titleRef.current.getBoundingClientRect());
+      const luminance = luminanceBehind(img, sectionRect, titleRef.current.getBoundingClientRect());
       if (luminance !== null) setDarkTitle(luminance > DARK_TEXT_THRESHOLD);
+      if (dotsRef.current) {
+        const dotsLuminance = luminanceBehind(img, sectionRect, dotsRef.current.getBoundingClientRect());
+        if (dotsLuminance !== null) setDarkDots(dotsLuminance > DARK_TEXT_THRESHOLD);
+      }
     } catch {
-      // Canvas bloqueado (imagen de otro origen sin CORS): se queda en blanco.
+      // Canvas bloqueado (imagen de otro origen sin CORS): se quedan en blanco.
       setDarkTitle(false);
+      setDarkDots(false);
     }
   }, [activeImageIndex]);
 
@@ -142,31 +151,31 @@ export default function ProjectSection({ project, index, isLast, onOpenInfo, onS
       </div>
 
       <div className={`${styles.overlay} ${darkTitle ? styles.overlayDarkTitle : ''}`}>
-        <button
-          className={styles.infoBtn}
-          onClick={() => onOpenInfo(project)}
-          aria-label={t.viewInfo}
-        >
-          <Plus size={22} />
-        </button>
         <div className={styles.bottomArea}>
           <div className={styles.projectHeader}>
+            <button
+              className={styles.infoBtn}
+              onClick={() => onOpenInfo(project)}
+              aria-label={t.viewInfo}
+            >
+              <Plus size={22} />
+            </button>
             <h2 ref={titleRef} className={`${styles.projectTitle} ${darkTitle ? styles.projectTitleDark : ''}`}>{title}</h2>
           </div>
-          
-          <div className={styles.dotsContainer}>
-            <div className={styles.dots}>
-              {project.images.map((_, i) => (
-                <button 
-                  key={i} 
-                  className={`${styles.dot} ${activeImageIndex === i ? styles.dotActive : ''}`} 
-                  onClick={() => scrollToImage(i)}
-                  aria-label={`Ver imagen ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+        </div>
 
+        {/* Fuera de bottomArea: la posición de los dots es independiente de la del bloque info + título. */}
+        <div ref={dotsRef} className={`${styles.dotsContainer} ${darkDots ? styles.dotsDark : ''}`}>
+          <div className={styles.dots}>
+            {project.images.map((_, i) => (
+              <button
+                key={i}
+                className={`${styles.dot} ${activeImageIndex === i ? styles.dotActive : ''}`}
+                onClick={() => scrollToImage(i)}
+                aria-label={`Ver imagen ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         <div className={styles.verticalNav}>

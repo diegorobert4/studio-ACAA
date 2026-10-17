@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { FolderKanban, Image as ImageIcon, Newspaper, Clock } from 'lucide-react';
-import type { Project, ProjectStatus } from '@/data';
+import type { Project } from '@/data';
 import { getAdminProjects } from '@/lib/projects';
 
 function getLatestProject(projects: Project[]) {
@@ -17,11 +17,13 @@ function formatDate(iso?: string) {
 const rowGrid =
   'grid min-w-[60rem] grid-cols-[minmax(10rem,1.4fr)_8rem_4rem_minmax(9rem,1fr)_6rem_minmax(9rem,1fr)_5rem] items-center gap-4 px-4';
 
-const statusStyles: Record<ProjectStatus, string> = {
+// Estado es texto libre: los valores históricos tienen color propio; el resto usa uno neutro.
+const statusStyles: Record<string, string> = {
   Anteproyecto: 'bg-estado-anteproyecto text-estado-anteproyecto-fg',
   Completado: 'bg-estado-completado text-estado-completado-fg',
   'En obra': 'bg-estado-en-obra text-estado-en-obra-fg',
 };
+const defaultStatusStyle = 'bg-neutral-200 text-neutral-700';
 
 export default async function AdminDashboard() {
   const projects = await getAdminProjects();
@@ -100,7 +102,7 @@ export default async function AdminDashboard() {
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0 break-words font-medium">{project.title}</span>
                   <span
-                    className={`inline-block shrink-0 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider ${statusStyles[project.status]}`}
+                    className={`inline-block shrink-0 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider ${statusStyles[project.status] ?? defaultStatusStyle}`}
                   >
                     {project.status}
                   </span>
@@ -141,7 +143,7 @@ export default async function AdminDashboard() {
                   <div className="truncate font-medium">{project.title}</div>
                   <div>
                     <span
-                      className={`inline-block px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider ${statusStyles[project.status]}`}
+                      className={`inline-block px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider ${statusStyles[project.status] ?? defaultStatusStyle}`}
                     >
                       {project.status}
                     </span>
