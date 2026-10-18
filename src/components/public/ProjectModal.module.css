@@ -61,13 +61,13 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--gray-500);
+  color: #000;
   margin-bottom: 0.25rem;
 }
 
 .infoItem p, .infoItem a {
   font-size: 1rem;
-  color: var(--foreground);
+  color: #000;
 }
 
 @media (max-width: 768px) {
