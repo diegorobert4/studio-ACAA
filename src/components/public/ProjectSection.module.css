@@ -233,7 +233,7 @@
   .bottomArea {
     left: 1rem;
     right: 1rem;
-    bottom: 1.125rem;
+    bottom: 1rem;
   }
 
   .projectTitle {
@@ -260,22 +260,23 @@
   }
 
   .infoBtn {
-    width: 24px;
-    height: 24px;
+    /* Mismo tamaño que la hamburguesa: el de una mayúscula del título. */
+    width: 16px;
+    height: 16px;
     /* Más opaco + borde sutil para distinguirse sobre fotos claras. */
     background-color: rgba(0, 0, 0, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.35);
   }
 
-  /* Zona táctil de 40px sin cambiar el tamaño visual de 24px. */
+  /* Zona táctil de 40px sin cambiar el tamaño visual de 16px. */
   .infoBtn::before {
     content: '';
     position: absolute;
-    inset: -8px;
+    inset: -12px;
   }
 
   .infoBtn svg {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
   }
 }

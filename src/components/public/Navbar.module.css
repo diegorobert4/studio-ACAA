@@ -54,22 +54,23 @@
 
   .projectToggle {
     position: relative;
-    width: 24px;
-    height: 24px;
+    /* Del tamaño de una mayúscula del título del proyecto (que usa clamp(0.9rem, 4vw, 1.2rem)). */
+    width: 16px;
+    height: 16px;
     /* Más opaco + borde sutil para distinguirse sobre fotos claras y sobre el fondo gris de Contacto. */
     background-color: rgba(0, 0, 0, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.35);
   }
 
-  /* Zona táctil de 40px sin cambiar el tamaño visual de 24px. */
+  /* Zona táctil de 40px sin cambiar el tamaño visual de 16px. */
   .projectToggle::before {
     content: '';
     position: absolute;
-    inset: -8px;
+    inset: -12px;
   }
 
   .projectToggle svg {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
   }
 }
